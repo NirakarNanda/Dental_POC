@@ -20,10 +20,9 @@ const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
 /**
  * PearlSmile POC entry page — like the botanical reference:
- * a 3D sunlit crystal bubble overlapping the headline (text stays visible
- * THROUGH the glass), a pristine tooth floating inside it, an elegant
- * orchid pot along the bottom edge, and delicate butterflies wandering
- * the hero.
+ * a pure-CSS 3D glass bubble with a soft warm glow overlapping the headline
+ * (text stays visible THROUGH the clear center), a discrete purple-orchid
+ * pot grounded bottom-right, and delicate butterflies wandering the hero.
  */
 export default function LandingPage() {
   const rootRef = useRef<HTMLElement>(null);
@@ -336,7 +335,8 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          {/* The bubble — crystal clear, so the headline reads THROUGH it */}
+          {/* The bubble — a pure-CSS 3D glass sphere + soft warm glow.
+              The center stays transparent so the headline reads THROUGH it. */}
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
             <div ref={parallaxRef} data-orb-enter className="opacity-0">
               <div ref={floatRef}>
@@ -345,28 +345,17 @@ export default function LandingPage() {
                     ref={breatheRef}
                     className="relative h-[clamp(220px,34vw,400px)] w-[clamp(220px,34vw,400px)]"
                   >
-                    {/* tooth floats inside the bubble */}
-                    <Image
-                      src="/tooth.png"
-                      alt=""
+                    {/* 3D glass sphere: spherical shading + glass rim + glow */}
+                    <div
                       aria-hidden="true"
-                      width={800}
-                      height={800}
-                      priority
-                      className="absolute left-1/2 top-1/2 w-[46%] -translate-x-1/2 -translate-y-1/2"
+                      className="orb-sphere absolute inset-0 rounded-full"
                     />
-                    {/* the glass itself — a 3D sunlit crystal bubble
-                        (AI-generated, ruthlessly cleaned: no droplets,
-                        no texture, pristine) */}
-                    <Image
-                      src="/orb-3d.png"
-                      alt="A pristine tooth preserved inside a crystal-clear sunlit glass bubble"
-                      width={1600}
-                      height={1600}
-                      priority
-                      className="absolute inset-0 h-full w-full"
+                    {/* one specular highlight at ~10 o'clock */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute left-[17%] top-[11%] h-[9%] w-[15%] -rotate-[24deg] rounded-[100%] bg-white/70 blur-[7px] dark:bg-white/60"
                     />
-                    {/* travelling specular highlight, clipped to the bubble */}
+                    {/* travelling specular highlight, clipped to the sphere */}
                     <div className="absolute inset-0 overflow-hidden rounded-full">
                       <div
                         ref={sweepRef}

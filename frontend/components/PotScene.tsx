@@ -3,39 +3,33 @@
 import Image from "next/image";
 
 /**
- * PotScene — a single elegant purple-orchid photograph along the bottom edge
- * of the landing hero. The full rectangular photo is blended into the page
- * with long CSS mask fades (no cutouts, so no fringes or halos). A seam-wash
- * overlay knits the photo into the page background so no horizontal band is
- * ever visible. The still-life stays essentially still — GSAP gives it only a
+ * PotScene — the purple orchid as a DISCRETE element anchored bottom-right
+ * of the landing hero (not a full-width strip): a portrait crop holding the
+ * entire plant — blooms, leaves, pot — with its top and left edges feathered
+ * into the background via CSS masks, so no hard rectangle edges. The
+ * still-life stays essentially still — GSAP gives it only a
  * barely-perceptible slow zoom for life.
  */
 export default function PotScene() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] overflow-hidden"
+      className="pointer-events-none absolute bottom-0 right-0 z-[1] overflow-hidden"
     >
-      <div data-pot className="pot-zoom absolute inset-x-0 bottom-0 h-[30vh] sm:h-[36vh]">
+      <div
+        data-pot
+        className="pot-zoom relative h-[300px] w-[305px] sm:h-[46vh] sm:w-auto sm:aspect-[1260/1240] lg:h-[52vh]"
+      >
         <Image
-          src="/orchid-pot.jpg"
+          src="/orchid-plant.jpg"
           alt=""
           fill
-          sizes="100vw"
-          className="pot-photo object-cover object-bottom dark:brightness-[0.62] dark:saturate-[0.85]"
+          sizes="(max-width: 640px) 305px, 40vw"
+          className="pot-plant object-cover object-bottom dark:brightness-[0.62] dark:saturate-[0.85]"
         />
         {/* cool tint so the photo melts into the dark theme */}
         <div className="absolute inset-0 hidden dark:block dark:bg-[#0d3b38]/35" />
-        {/* dark-mode top grade: navy washes down over the bright photo top */}
-        <div className="absolute inset-0 hidden bg-gradient-to-b from-[#041f1e] via-[#041f1e]/35 to-transparent dark:block" />
       </div>
-
-      {/* seam wash: page background knits the photo into the backdrop —
-          spans the whole transition zone so no horizontal band is visible */}
-      <div className="absolute inset-x-0 top-0 h-[62%] bg-gradient-to-b from-[#f7f4ec]/[0.55] via-[#f7f4ec]/25 to-transparent dark:from-[#041f1e]/[0.62] dark:via-[#041f1e]/30 dark:to-transparent" />
-
-      {/* spacer gives the scene its height */}
-      <div className="h-[30vh] sm:h-[36vh]" />
     </div>
   );
 }
