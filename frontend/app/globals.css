@@ -231,25 +231,8 @@ body {
 }
 
 /* ---------- Landing orchid pot (discrete, bottom-right) ---------- */
-/* The portrait crop dissolves into the background on ALL sides via a full
-   vignette (long soft fades top/left/right, gentler at the grounded bottom)
-   so the plant emerges from the scene with no visible rectangle — critical
-   in dark mode, where the photo's bright studio backdrop would otherwise
-   read as a pasted-on light box. */
-.pot-plant {
-  -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0%, black 30%),
-    linear-gradient(to right, transparent 0%, black 24%),
-    linear-gradient(to left, transparent 0%, black 8%),
-    linear-gradient(to top, transparent 0%, black 14%);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to bottom, transparent 0%, black 30%),
-    linear-gradient(to right, transparent 0%, black 24%),
-    linear-gradient(to left, transparent 0%, black 8%),
-    linear-gradient(to top, transparent 0%, black 14%);
-  mask-composite: intersect;
-}
+/* The PNG carries true transparency (background removed), so it needs no
+   masks, overlays, or grading — it floats cleanly on both themes. */
 /* barely-there slow zoom keeps the still-life alive */
 .pot-zoom {
   transform-origin: 50% 100%;

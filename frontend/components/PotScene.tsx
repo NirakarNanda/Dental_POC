@@ -4,11 +4,10 @@ import Image from "next/image";
 
 /**
  * PotScene — the purple orchid as a DISCRETE element anchored bottom-right
- * of the landing hero (not a full-width strip): a portrait crop holding the
- * entire plant — blooms, leaves, pot — with its top and left edges feathered
- * into the background via CSS masks, so no hard rectangle edges. The
- * still-life stays essentially still — GSAP gives it only a
- * barely-perceptible slow zoom for life.
+ * of the landing hero (not a full-width strip). The PNG has a true
+ * transparent background (user-removed), so no masks, overlays, or grading
+ * are needed — it floats cleanly on both themes with just a soft ground
+ * shadow under the pot. GSAP gives it only a barely-perceptible slow zoom.
  */
 export default function PotScene() {
   return (
@@ -20,16 +19,15 @@ export default function PotScene() {
         data-pot
         className="pot-zoom relative h-[300px] w-[305px] sm:h-[46vh] sm:w-auto sm:aspect-[1260/1240] lg:h-[52vh]"
       >
+        {/* soft ground shadow so the pot sits in the scene */}
+        <div className="absolute bottom-3 left-1/2 h-[26px] w-[62%] -translate-x-1/2 rounded-full bg-black/25 blur-xl dark:bg-black/60" />
         <Image
           src="/orchid-plant.png"
           alt=""
           fill
           sizes="(max-width: 640px) 305px, 40vw"
-          className="pot-plant object-cover object-bottom dark:brightness-[0.35] dark:saturate-[0.8]"
+          className="object-contain object-bottom"
         />
-        {/* navy grade: slight veil over the center, full navy at the edges —
-            the plant emerges from darkness, no visible rectangle */}
-        <div className="absolute inset-0 hidden bg-[radial-gradient(ellipse_at_center,rgba(4,31,30,0.55)_0%,transparent_30%,#041f1e_72%)] dark:block" />
       </div>
     </div>
   );
