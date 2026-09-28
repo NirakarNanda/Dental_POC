@@ -22,6 +22,21 @@ export interface Appointment {
   time: string;
   treatment: string;
   status: string;
+  fee: number;
+}
+
+export interface NewAppointment {
+  patientId?: string;
+  patientName?: string;
+  date: string; // yyyy-mm-dd
+  time: string; // HH:MM
+  treatment?: string;
+  fee?: number;
+}
+
+export interface RevenueSummary {
+  total: number;
+  count: number;
 }
 
 export interface User {
@@ -81,6 +96,20 @@ export const api = {
 
   todayAppointments: () =>
     request<{ appointments: Appointment[] }>("/api/appointments/today"),
+  createAppointment: (payload: NewAppointment) =>
+    request<{ appointment: Appointment }>("/api/appointments", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  updateAppointment: (id: string, payload: { status: string }) =>
+    request<{ appointment: Appointment }>(`/api/appointments/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  monthRevenue: (month = "") =>
+    request<RevenueSummary>(
+      `/api/appointments/revenue${month ? `?month=${encodeURIComponent(month)}` : ""}`,
+    ),
 };
 
 export const TREATMENTS = [
