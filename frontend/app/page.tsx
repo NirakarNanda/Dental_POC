@@ -43,6 +43,7 @@ export default function LandingPage() {
         gsap.set("[data-fade]", { opacity: 1, y: 0 });
         gsap.set("[data-orb-enter]", { opacity: 1, scale: 1 });
         gsap.set(".flora-layer", { xPercent: 0, skewX: 0 });
+        gsap.set("[data-butterfly]", { opacity: 0 });
         gsap.set("[data-petal]", { opacity: 0.7 });
         return;
       }
@@ -162,6 +163,55 @@ export default function LandingPage() {
           .toArray<HTMLElement>(".flora-layer")
           .forEach((layer, i) => gustDrift(layer, i === 0 ? -1 : 1));
       };
+
+      // ── Butterflies: gentle wandering above the meadow ──
+      // Curved drift on randomized waypoints (never a straight line),
+      // wings fluttering via a fast scaleY oscillation on the inner
+      // wrapper. Small, blurred, ambient — never distracting.
+      gsap.utils.toArray<HTMLElement>("[data-butterfly]").forEach((bf) => {
+        const dur = parseFloat(bf.dataset.dur || "28");
+        const delay = parseFloat(bf.dataset.delay || "0");
+        gsap.to(bf, { opacity: 1, duration: 2.5, delay: delay + 1 });
+        gsap.to(bf, {
+          keyframes: [
+            {
+              x: rand(60, 150),
+              y: rand(-55, -12),
+              rotation: rand(-9, 9),
+              duration: dur * 0.3,
+              ease: "sine.inOut",
+            },
+            {
+              x: rand(-50, 110),
+              y: rand(-75, 8),
+              rotation: rand(-11, 11),
+              duration: dur * 0.35,
+              ease: "sine.inOut",
+            },
+            {
+              x: rand(-90, 30),
+              y: rand(-45, -5),
+              rotation: rand(-9, 9),
+              duration: dur * 0.35,
+              ease: "sine.inOut",
+            },
+          ],
+          repeat: -1,
+          yoyo: true,
+          delay: delay + 1,
+        });
+        const wing = bf.querySelector("[data-flutter]");
+        if (wing) {
+          gsap.to(wing, {
+            scaleY: 0.55,
+            transformOrigin: "50% 50%",
+            duration: rand(0.14, 0.2),
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut",
+          });
+        }
+      });
 
       if (fine && parallaxRef.current) {
         const qx = gsap.quickTo(parallaxRef.current, "x", {
@@ -345,15 +395,23 @@ export default function LandingPage() {
                       priority
                       className="absolute left-1/2 top-1/2 w-[46%] -translate-x-1/2 -translate-y-1/2"
                     />
-                    {/* the glass itself — transparent middle */}
-                    <Image
-                      src="/orb-glass.png"
-                      alt="A pristine tooth preserved inside a crystal-clear glass bubble"
-                      width={1200}
-                      height={1200}
-                      priority
-                      className="absolute inset-0 h-full w-full"
-                    />
+                    {/* the glass itself — pure CSS, guaranteed clean:
+                        hairline rim, transparent center, one tiny specular
+                        highlight. No AI artifacts, ever. */}
+                    <div
+                      role="img"
+                      aria-label="A pristine tooth preserved inside a crystal-clear glass bubble"
+                      className="absolute inset-0 rounded-full border border-[#0e2a28]/30 dark:border-white/55"
+                      style={{
+                        boxShadow:
+                          "inset 0 0 1px rgba(255,255,255,0.35), 0 0 0 7px rgba(255,255,255,0.06), 0 0 54px rgba(255,255,255,0.12)",
+                      }}
+                    >
+                      <div
+                        aria-hidden="true"
+                        className="absolute left-[15%] top-[9%] h-[6%] w-[15%] -rotate-[24deg] rounded-[100%] bg-white/75 blur-[6px] dark:bg-white/85"
+                      />
+                    </div>
                     {/* travelling specular highlight, clipped to the bubble */}
                     <div className="absolute inset-0 overflow-hidden rounded-full">
                       <div

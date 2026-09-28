@@ -215,14 +215,16 @@ body {
   will-change: transform;
 }
 /* photo edges melt into the background instead of cutting off —
-   top fade plus soft left/right fades, so no hard edges anywhere */
+   a LONG top fade (fully transparent until 30%, full opacity only in the
+   bottom quarter) plus soft left/right fades, so no horizontal seam
+   band is ever perceptible */
 .flora-photo {
   -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0%, black 45%),
+    linear-gradient(to bottom, transparent 0%, transparent 30%, black 75%),
     linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-image:
-    linear-gradient(to bottom, transparent 0%, black 45%),
+    linear-gradient(to bottom, transparent 0%, transparent 30%, black 75%),
     linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
   mask-composite: intersect;
 }
