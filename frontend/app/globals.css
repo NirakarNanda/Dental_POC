@@ -302,3 +302,51 @@ body {
     animation: none;
   }
 }
+
+/* Sidebar settings dropdown — smooth unfold with staggered options */
+.side-submenu {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.42s cubic-bezier(0.22, 0.9, 0.28, 1),
+    opacity 0.28s ease,
+    visibility 0s linear 0.42s;
+}
+.side-submenu.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 0.42s cubic-bezier(0.22, 0.9, 0.28, 1),
+    opacity 0.3s ease 0.06s,
+    visibility 0s;
+}
+.side-submenu-clip {
+  overflow: hidden;
+  min-height: 0;
+}
+.side-submenu-item {
+  opacity: 0;
+  transform: translateY(-7px);
+  transition:
+    opacity 0.26s ease,
+    transform 0.4s cubic-bezier(0.22, 0.9, 0.28, 1),
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+.side-submenu.open .side-submenu-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .side-submenu,
+  .side-submenu-item {
+    transition: none;
+  }
+  .side-submenu-item {
+    opacity: 1;
+    transform: none;
+  }
+}

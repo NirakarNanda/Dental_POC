@@ -1,13 +1,22 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Logo from "@/components/Logo";
 import ToastProvider from "@/components/Toast";
 import AmbientBackground from "@/components/AmbientBackground";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { fraunces } from "@/lib/fonts";
 import { useRequireAuth } from "@/lib/auth";
+import { SETTINGS_SECTIONS, settingsSectionHref } from "@/lib/settings-sections";
+
+const SETTINGS_ICON = (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" />
+  </svg>
+);
 
 const NAV = [
   {
@@ -33,17 +42,81 @@ const NAV = [
       </svg>
     ),
   },
-  {
-    label: "Settings",
-    href: "/settings",
-    icon: (
-      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" />
-      </svg>
-    ),
-  },
 ];
+
+const MOBILE_NAV = [...NAV, { label: "Settings", href: "/settings" }];
+
+// Expandable Settings group for the desktop sidebar: each option deep-links
+// to its section on the settings page, with a staggered unfold animation.
+function SettingsNav({ pathname }: { pathname: string }) {
+  const searchParams = useSearchParams();
+  const onSettings = pathname === "/settings";
+  const current = searchParams.get("section") ?? SETTINGS_SECTIONS[0].value;
+  const [open, setOpen] = useState(onSettings);
+
+  useEffect(() => {
+    if (onSettings) setOpen(true);
+  }, [onSettings]);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+          onSettings || open
+            ? "bg-ink/[0.06] text-ink dark:bg-white/[0.07] dark:text-white"
+            : "text-ink/60 hover:bg-ink/5 hover:text-ink dark:text-white/55 dark:hover:bg-white/5 dark:hover:text-white"
+        }`}
+      >
+        {SETTINGS_ICON}
+        <span className="flex-1 text-left">Settings</span>
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className={`text-ink/40 transition-transform duration-300 ease-out dark:text-white/40 ${
+            open ? "rotate-180" : ""
+          }`}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      <div className={`side-submenu ${open ? "open" : ""}`}>
+        <div className="side-submenu-clip">
+          <ul className="mb-1 ml-[27px] flex flex-col gap-0.5 border-l border-ink/10 py-1.5 pl-3 dark:border-white/10">
+            {SETTINGS_SECTIONS.map((s, i) => {
+              const active = onSettings && current === s.value;
+              return (
+                <li key={s.value}>
+                  <Link
+                    href={settingsSectionHref(s.value)}
+                    style={{ transitionDelay: open ? `${70 + i * 55}ms` : "0ms" }}
+                    className={`side-submenu-item flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                      active
+                        ? "bg-ink text-ivory dark:bg-mint-300 dark:text-abyss-950"
+                        : "text-ink/60 hover:bg-ink/5 hover:text-ink dark:text-white/55 dark:hover:bg-white/5 dark:hover:text-white"
+                    }`}
+                  >
+                    {s.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ShellInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -102,6 +175,23 @@ function ShellInner({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+          <Suspense
+            fallback={
+              <Link
+                href="/settings"
+                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                  pathname === "/settings"
+                    ? "bg-ink text-ivory dark:bg-mint-300 dark:text-abyss-950"
+                    : "text-ink/60 hover:bg-ink/5 hover:text-ink dark:text-white/55 dark:hover:bg-white/5 dark:hover:text-white"
+                }`}
+              >
+                {SETTINGS_ICON}
+                Settings
+              </Link>
+            }
+          >
+            <SettingsNav pathname={pathname} />
+          </Suspense>
           <a
             href="/"
             target="_blank"
@@ -152,7 +242,7 @@ function ShellInner({ children }: { children: React.ReactNode }) {
           <Logo size={30} />
         </Link>
         <div className="flex min-w-0 items-center gap-1">
-          {NAV.map((n) => {
+          {MOBILE_NAV.map((n) => {
             const active = pathname === n.href;
             return (
               <Link

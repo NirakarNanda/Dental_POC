@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import PasswordField from "@/components/PasswordField";
 import { useToast } from "@/components/Toast";
@@ -10,6 +11,7 @@ import { fraunces } from "@/lib/fonts";
 import { useRequireAuth } from "@/lib/auth";
 import { useSettings } from "@/lib/settings";
 import { useTheme, type ThemeMode } from "@/components/theme/ThemeProvider";
+import { SETTINGS_SECTIONS as SECTIONS } from "@/lib/settings-sections";
 
 const inputCls =
   "w-full rounded-xl border border-ink/10 bg-white/70 px-4 py-3 text-[15px] text-ink placeholder:text-ink/30 outline-none transition focus:border-mint-500 focus:ring-2 focus:ring-mint-500/25 dark:border-white/10 dark:bg-white/[0.06] dark:text-[#edf7f5] dark:placeholder:text-white/25";
@@ -329,16 +331,26 @@ function ChangePassword() {
   );
 }
 
-const SECTIONS = [
-  { value: "appointments", label: "Booking defaults", hint: "Your standard consultation fee, pre-filled on every booking." },
-  { value: "appearance", label: "Appearance", hint: "Light, dark, or follow this device automatically." },
-  { value: "data", label: "Data export", hint: "Download patients and appointments as CSV files." },
-  { value: "security", label: "Security", hint: "Change your sign-in password." },
-];
-
 function SettingsInner() {
-  const [section, setSection] = useState(SECTIONS[0].value);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const param = searchParams.get("section");
+  const validParam =
+    param && SECTIONS.some((s) => s.value === param) ? param : null;
+  const [section, setSection] = useState(validParam ?? SECTIONS[0].value);
   const active = SECTIONS.find((s) => s.value === section) ?? SECTIONS[0];
+
+  // Deep links (e.g. from the sidebar) switch the visible section.
+  useEffect(() => {
+    if (validParam) setSection(validParam);
+  }, [validParam]);
+
+  const pickSection = (value: string) => {
+    setSection(value);
+    router.replace(`/settings?section=${encodeURIComponent(value)}`, {
+      scroll: false,
+    });
+  };
 
   return (
     <div className="mx-auto w-full max-w-2xl">
@@ -350,7 +362,7 @@ function SettingsInner() {
           <select
             id="settings-section"
             value={section}
-            onChange={(e) => setSection(e.target.value)}
+            onChange={(e) => pickSection(e.target.value)}
             className={`${inputCls} cursor-pointer appearance-none pr-11 font-medium dark:[color-scheme:dark]`}
           >
             {SECTIONS.map((s) => (
@@ -394,7 +406,15 @@ function SettingsInner() {
 export default function SettingsPage() {
   return (
     <AppShell>
-      <SettingsInner />
+      <Suspense
+        fallback={
+          <div className="mx-auto w-full max-w-2xl">
+            <div className="glass-deep h-64 animate-pulse rounded-[1.75rem]" />
+          </div>
+        }
+      >
+        <SettingsInner />
+      </Suspense>
     </AppShell>
   );
 }
