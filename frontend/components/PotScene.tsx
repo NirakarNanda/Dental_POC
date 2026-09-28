@@ -8,6 +8,10 @@ import Image from "next/image";
  * transparent background (user-removed), so no masks, overlays, or grading
  * are needed — it floats cleanly on both themes with just a soft ground
  * shadow under the pot. GSAP gives it only a barely-perceptible slow zoom.
+ *
+ * Responsive sizing: small and discreet on phones (130px — the CTA button
+ * and caption stay 100px+ clear, and the pot tucks below the footer text),
+ * modest on tablets (210px), full presence on desktop (52vh).
  */
 export default function PotScene() {
   return (
@@ -17,7 +21,7 @@ export default function PotScene() {
     >
       <div
         data-pot
-        className="pot-zoom relative h-[300px] w-[305px] sm:h-[46vh] sm:w-auto sm:aspect-[1260/1240] lg:h-[52vh]"
+        className="pot-zoom relative aspect-[1260/1240] h-[130px] w-auto sm:h-[210px] lg:h-[52vh]"
       >
         {/* soft ground shadow so the pot sits in the scene */}
         <div className="absolute bottom-3 left-1/2 h-[26px] w-[62%] -translate-x-1/2 rounded-full bg-black/25 blur-xl dark:bg-black/60" />
@@ -25,7 +29,7 @@ export default function PotScene() {
           src="/orchid-plant.png"
           alt=""
           fill
-          sizes="(max-width: 640px) 305px, 40vw"
+          sizes="(max-width: 640px) 132px, (max-width: 1024px) 213px, 40vw"
           className="object-contain object-bottom"
         />
       </div>

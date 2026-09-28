@@ -367,18 +367,6 @@ export default function LandingPage() {
               your calendar.
             </p>
           </div>
-          <div
-            data-fade
-            className="absolute right-0 top-[37%] hidden w-56 -translate-y-1/2 text-right xl:block"
-          >
-            <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#0e2a28]/45 dark:text-white/40">
-              The Standard
-            </p>
-            <p className="mt-3 text-[13.5px] leading-relaxed text-[#0e2a28]/70 dark:text-white/60">
-              From routine hygiene to full smile design. One studio, one
-              standard: excellence.
-            </p>
-          </div>
         </div>
 
         {/* ── CTA ── */}
@@ -417,6 +405,25 @@ export default function LandingPage() {
       {/* ── orchid pot scene along the bottom edge ── */}
       <div data-fade>
         <PotScene />
+      </div>
+
+      {/* ── side note: The Standard — at Doctor Login button height, right
+          side, just left of the plant (xl only). Positioned against the
+          full-viewport section (same context as the plant): the right offset
+          clears the plant's max width (52vh × 1.016 aspect × 1.03 zoom) at
+          any window size, and the bottom offset centers the note on the
+          button (button center sits at 50vh − ~186px from the bottom). */}
+      <div
+        data-fade
+        className="absolute bottom-[calc(50vh-230px)] right-[calc(56vh+1.5rem)] z-10 hidden w-56 text-right xl:block"
+      >
+        <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#0e2a28]/45 dark:text-white/40">
+          The Standard
+        </p>
+        <p className="mt-3 text-[13.5px] leading-relaxed text-[#0e2a28]/70 dark:text-white/60">
+          From routine hygiene to full smile design. One studio, one
+          standard: excellence.
+        </p>
       </div>
 
       {/* ── film grain ── */}
