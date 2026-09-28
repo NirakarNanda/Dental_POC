@@ -200,3 +200,25 @@ body {
     animation: none;
   }
 }
+
+/* ---------- Landing flora strip ---------- */
+/* Muted botanical tones for the swaying wildflowers; deepened in dark mode */
+:root {
+  --flora-stem: #7d8f6f;
+  --flora-leaf: #93a986;
+  --flora-grass: #a9b795;
+  --flora-petal: #f4f0e3;
+  --flora-center: #d9b25f;
+}
+.dark {
+  --flora-stem: #3a5a4e;
+  --flora-leaf: #2e4a42;
+  --flora-grass: #41604f;
+  --flora-petal: #cfe3da;
+  --flora-center: #8a6f3a;
+}
+/* GSAP rotates each stem around its base */
+.flora-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}

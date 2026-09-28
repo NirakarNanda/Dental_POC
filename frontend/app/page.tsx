@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fraunces } from "@/lib/fonts";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import FloraStrip from "@/components/FloraStrip";
 import { gsap, useGSAP } from "@/lib/gsap";
 
 const AVATARS = [
@@ -15,16 +16,21 @@ const AVATARS = [
   { initials: "JT", bg: "bg-[#e9e2d6] text-[#6d5a3e] dark:bg-abyss-800 dark:text-mint-100" },
 ];
 
+const rand = (min: number, max: number) => min + Math.random() * (max - min);
+
 /**
- * PearlSmile POC entry page — editorial, premium, restrained.
- * A single viewport hero: oversized serif headline wrapped around a luminous
- * glass-orb visual, quiet corner details, one Doctor Login CTA.
+ * PearlSmile POC entry page — like the botanical reference:
+ * a crystal-clear bubble overlapping the headline (text stays visible THROUGH
+ * the glass), a pristine tooth floating inside it, and wildflowers swaying
+ * along the bottom edge.
  */
 export default function LandingPage() {
   const rootRef = useRef<HTMLElement>(null);
   const parallaxRef = useRef<HTMLDivElement>(null);
   const floatRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
+  const spinRef = useRef<HTMLDivElement>(null);
+  const breatheRef = useRef<HTMLDivElement>(null);
+  const sweepRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
@@ -36,6 +42,8 @@ export default function LandingPage() {
         gsap.set(".hl-inner", { yPercent: 0 });
         gsap.set("[data-fade]", { opacity: 1, y: 0 });
         gsap.set("[data-orb-enter]", { opacity: 1, scale: 1 });
+        gsap.set(".flora-sway", { rotation: 0 });
+        gsap.set("[data-petal]", { opacity: 0.7 });
         return;
       }
 
@@ -52,20 +60,20 @@ export default function LandingPage() {
         },
       );
 
-      // Orb entrance
+      // Bubble entrance
       gsap.fromTo(
         "[data-orb-enter]",
-        { opacity: 0, scale: 0.93 },
+        { opacity: 0, scale: 0.9 },
         {
           opacity: 1,
           scale: 1,
-          duration: 1.6,
+          duration: 1.8,
           ease: "power3.out",
           delay: 0.45,
         },
       );
 
-      // Quiet fades for header, corners, side notes, CTA
+      // Quiet fades for header, corners, side notes, CTA, flora
       gsap.fromTo(
         "[data-fade]",
         { opacity: 0, y: 16 },
@@ -79,28 +87,49 @@ export default function LandingPage() {
         },
       );
 
-      // Slow orb float (inner wrapper — never fights the parallax wrapper)
+      // ── Bubble life ──────────────────────────────────────────
+      // Gentle vertical bob (±14px, ~6s)
       gsap.to(floatRef.current, {
         y: -14,
         duration: 6,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut",
-        delay: 1.8,
+        delay: 2,
       });
-
-      // Soft glow pulse behind the orb
-      gsap.to(glowRef.current, {
-        opacity: 0.55,
-        scale: 1.07,
-        duration: 5,
+      // Slight rotation (±2°)
+      gsap.to(spinRef.current, {
+        rotation: 2,
+        duration: 7,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut",
-        delay: 1.8,
+        delay: 2,
       });
+      // Slow "breathing" scale
+      gsap.to(breatheRef.current, {
+        scale: 1.015,
+        duration: 4.5,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        delay: 2,
+      });
+      // Animated specular sweep across the glass every ~5s
+      gsap.fromTo(
+        sweepRef.current,
+        { xPercent: -160 },
+        {
+          xPercent: 460,
+          duration: 1.4,
+          ease: "power2.inOut",
+          repeat: -1,
+          repeatDelay: 3.6,
+          delay: 2.6,
+        },
+      );
 
-      // Gentle mouse parallax on the orb (±10px)
+      // Subtle mouse parallax on the whole bubble group (±18px)
       const fine = window.matchMedia("(pointer: fine)").matches;
       if (fine && parallaxRef.current) {
         const qx = gsap.quickTo(parallaxRef.current, "x", {
@@ -114,12 +143,52 @@ export default function LandingPage() {
         const onMove = (e: MouseEvent) => {
           const nx = e.clientX / window.innerWidth - 0.5;
           const ny = e.clientY / window.innerHeight - 0.5;
-          qx(nx * 20);
-          qy(ny * 20);
+          qx(nx * 36);
+          qy(ny * 36);
         };
         window.addEventListener("mousemove", onMove);
+
+        // ── Wildflower wind: staggered swaying stems ───────────
+        const stems = gsap.utils.toArray<HTMLElement>(".flora-sway");
+        stems.forEach((stem) => {
+          gsap.to(stem, {
+            rotation: rand(2, 4) * (Math.random() < 0.5 ? -1 : 1),
+            duration: rand(3, 6),
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut",
+            delay: rand(0, 2.5),
+          });
+        });
+
+        // ── A few petals drifting on the breeze ────────────────
+        gsap.utils.toArray<HTMLElement>("[data-petal]").forEach((petal) => {
+          gsap.to(petal, {
+            x: () => rand(-70, 70),
+            y: () => rand(-90, -30),
+            rotation: () => rand(-120, 120),
+            duration: () => rand(7, 11),
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: rand(0, 3),
+          });
+        });
+
         return () => window.removeEventListener("mousemove", onMove);
       }
+
+      // No fine pointer: still sway the flora + drift petals
+      gsap.utils.toArray<HTMLElement>(".flora-sway").forEach((stem) => {
+        gsap.to(stem, {
+          rotation: rand(2, 4) * (Math.random() < 0.5 ? -1 : 1),
+          duration: rand(3, 6),
+          yoyo: true,
+          repeat: -1,
+          ease: "sine.inOut",
+          delay: rand(0, 2.5),
+        });
+      });
     },
     { scope: rootRef },
   );
@@ -224,27 +293,69 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ── hero: headline fully legible, orb in its own row below ── */}
-      <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-6 pt-8 lg:px-10">
-        <h1
-          className={`${fraunces.className} relative z-10 text-center text-[clamp(2.6rem,6vw,5rem)] font-light leading-[1.06] tracking-[-0.015em]`}
-        >
-          <span className="block overflow-hidden pb-1">
-            <span className="hl-inner block">Gentle Dentistry,</span>
-          </span>
-          <span className="block overflow-hidden pb-1">
-            <span className="hl-inner block">Crafted Around</span>
-          </span>
-          <span className="block overflow-hidden pb-3">
-            <span className="hl-inner block italic">Your Smile.</span>
-          </span>
-        </h1>
+      {/* ── hero: headline with the bubble overlapping its middle ── */}
+      <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-6">
+        <div className="relative flex w-full flex-col items-center">
+          <h1
+            className={`${fraunces.className} relative z-0 text-center text-[clamp(2.9rem,7vw,5.75rem)] font-light leading-[1.08] tracking-[-0.015em]`}
+          >
+            <span className="block overflow-hidden pb-1">
+              <span className="hl-inner block">Gentle Dentistry,</span>
+            </span>
+            <span className="block overflow-hidden pb-1">
+              <span className="hl-inner block">Crafted Around</span>
+            </span>
+            <span className="block overflow-hidden pb-3">
+              <span className="hl-inner block italic">Your Smile.</span>
+            </span>
+          </h1>
 
-        {/* orb row — the orb can never touch the headline; side notes flank it */}
-        <div className="relative mt-8 flex w-full items-center justify-center lg:mt-10">
+          {/* The bubble — crystal clear, so the headline reads THROUGH it */}
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+            <div ref={parallaxRef} data-orb-enter className="opacity-0">
+              <div ref={floatRef}>
+                <div ref={spinRef}>
+                  <div
+                    ref={breatheRef}
+                    className="relative h-[clamp(220px,34vw,400px)] w-[clamp(220px,34vw,400px)]"
+                  >
+                    {/* tooth floats inside the bubble */}
+                    <Image
+                      src="/tooth.png"
+                      alt=""
+                      aria-hidden="true"
+                      width={800}
+                      height={800}
+                      priority
+                      className="absolute left-1/2 top-1/2 w-[46%] -translate-x-1/2 -translate-y-1/2"
+                    />
+                    {/* the glass itself — transparent middle */}
+                    <Image
+                      src="/orb-glass.png"
+                      alt="A pristine tooth preserved inside a crystal-clear glass bubble"
+                      width={1200}
+                      height={1200}
+                      priority
+                      className="absolute inset-0 h-full w-full"
+                    />
+                    {/* travelling specular highlight, clipped to the bubble */}
+                    <div className="absolute inset-0 overflow-hidden rounded-full">
+                      <div
+                        ref={sweepRef}
+                        aria-hidden="true"
+                        className="absolute -bottom-[20%] -top-[20%] left-0 w-1/3 rotate-[18deg] bg-gradient-to-r from-transparent via-white/50 to-transparent blur-md"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* side notes flank the bubble on wide screens */}
           <div
             data-fade
-            className="absolute left-0 hidden w-56 xl:block"
+            className="absolute left-0 top-1/2 hidden w-56 -translate-y-1/2 xl:block"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#0e2a28]/45 dark:text-white/40">
               The Studio
@@ -254,34 +365,9 @@ export default function LandingPage() {
               your calendar.
             </p>
           </div>
-
-          <div ref={parallaxRef} data-orb-enter className="opacity-0">
-            <div ref={floatRef} className="relative">
-              <div
-                ref={glowRef}
-                aria-hidden="true"
-                className="absolute inset-[-14%] rounded-full bg-[#cde9df]/70 blur-3xl dark:bg-mint-400/15"
-              />
-              <Image
-                src="/hero-orb.webp"
-                alt="A pristine molar preserved inside a luminous glass orb"
-                width={1600}
-                height={1600}
-                priority
-                className="relative h-[clamp(170px,44vw,210px)] w-[clamp(170px,44vw,210px)] rounded-full object-cover lg:h-[clamp(180px,18vw,250px)] lg:w-[clamp(180px,18vw,250px)]"
-                style={{
-                  maskImage:
-                    "radial-gradient(circle, black 62%, transparent 72%)",
-                  WebkitMaskImage:
-                    "radial-gradient(circle, black 62%, transparent 72%)",
-                }}
-              />
-            </div>
-          </div>
-
           <div
             data-fade
-            className="absolute right-0 hidden w-56 text-right xl:block"
+            className="absolute right-0 top-1/2 hidden w-56 -translate-y-1/2 text-right xl:block"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#0e2a28]/45 dark:text-white/40">
               The Standard
@@ -294,7 +380,7 @@ export default function LandingPage() {
         </div>
 
         {/* ── CTA ── */}
-        <div data-fade className="mt-8 flex flex-col items-center gap-4 lg:mt-10">
+        <div data-fade className="mt-14 flex flex-col items-center gap-4 lg:mt-16">
           <Link
             href="/login"
             className="group inline-flex items-center gap-3 rounded-full border border-[#0e2a28]/15 bg-white/85 py-4 pl-9 pr-7 text-[15px] font-semibold tracking-wide text-[#0e2a28] shadow-soft backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-[#0e2a28]/30 hover:shadow-lift dark:border-white/15 dark:bg-white/[0.07] dark:text-white dark:hover:border-white/30"
@@ -321,21 +407,37 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* ── bottom edge: soft-focus abstract band ────────────────── */}
+      {/* ── drifting petals ── */}
+      <span
+        data-petal
+        aria-hidden="true"
+        className="absolute left-[12%] top-[62%] z-[5] h-3 w-4 rounded-full bg-[var(--flora-petal)] opacity-0"
+      />
+      <span
+        data-petal
+        aria-hidden="true"
+        className="absolute right-[16%] top-[70%] z-[5] h-2.5 w-3.5 rounded-full bg-[var(--flora-petal)] opacity-0"
+      />
+      <span
+        data-petal
+        aria-hidden="true"
+        className="absolute left-[46%] top-[78%] z-[5] h-2 w-3 rounded-full bg-[var(--flora-petal)] opacity-0"
+      />
+
+      {/* ── swaying wildflowers along the bottom edge ── */}
+      <div data-fade>
+        <FloraStrip />
+      </div>
+
+      {/* ── film grain ── */}
       <div
         aria-hidden="true"
-        className="hero-band pointer-events-none absolute inset-x-0 bottom-0 z-0 h-48"
-      >
-        <div className="absolute -bottom-20 left-[6%] h-56 w-80 rounded-full bg-[#c9d2b4]/50 blur-3xl dark:bg-mint-900/40" />
-        <div className="absolute -bottom-24 left-[38%] h-64 w-[34rem] rounded-full bg-[#dfe4cd]/45 blur-3xl dark:bg-abyss-800/70" />
-        <div className="absolute -bottom-20 right-[4%] h-52 w-96 rounded-full bg-[#c2d8cf]/55 blur-3xl dark:bg-mint-900/30" />
-        <div className="hero-grain absolute inset-0 opacity-[0.05] dark:opacity-[0.07]" />
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#f7f4ec] to-transparent dark:from-abyss-950" />
-      </div>
+        className="hero-grain pointer-events-none absolute inset-0 z-[3] opacity-[0.05] dark:opacity-[0.07]"
+      />
 
       <footer
         data-fade
-        className="relative z-20 pb-6 text-center text-[11px] font-medium tracking-wide text-[#0e2a28]/40 dark:text-white/35"
+        className="relative z-20 pb-6 pt-2 text-center text-[11px] font-medium tracking-wide text-[#0e2a28]/40 dark:text-white/35"
       >
         © 2026 PearlSmile Dental Studio · Designed &amp; built by Nirakar
         Nanda
