@@ -26,8 +26,8 @@ interface ThemeState {
 }
 
 const ThemeCtx = createContext<ThemeState>({
-  mode: "light",
-  theme: "light",
+  mode: "dark",
+  theme: "dark",
   mounted: false,
   toggle: () => {},
   setMode: () => {},
@@ -41,7 +41,7 @@ function systemTheme(): EffectiveTheme {
       ? "dark"
       : "light";
   } catch {
-    return "light";
+    return "dark";
   }
 }
 
@@ -65,7 +65,7 @@ function readStoredMode(): ThemeMode {
   } catch {
     /* ignore */
   }
-  return "light";
+  return "dark";
 }
 
 export default function ThemeProvider({
@@ -73,11 +73,11 @@ export default function ThemeProvider({
 }: {
   children: React.ReactNode;
 }) {
-  // Mount-gated: first render is always light on both server and client,
-  // so SSR markup and hydration match. The stored preference is applied
-  // in an effect after mount (a blocking inline script in <head> also
-  // pre-applies it before first paint to avoid a flash).
-  const [mode, setModeState] = useState<ThemeMode>("light");
+  // Mount-gated: first render is always dark on both server and client,
+  // so SSR markup and hydration match (the blocking inline script in <head>
+  // pre-applies .dark before first paint to avoid a flash). The stored
+  // preference is applied in an effect after mount.
+  const [mode, setModeState] = useState<ThemeMode>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

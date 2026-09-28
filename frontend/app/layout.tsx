@@ -18,11 +18,12 @@ export const metadata: Metadata = {
 
 /**
  * Blocking inline script: reads the persisted theme before first paint and
- * applies .dark to <html> so there is no light-flash on reload. The class is
- * applied imperatively (React never renders it), and suppressHydrationWarning
- * covers the attribute diff at hydration.
+ * applies .dark to <html> so there is no light-flash on reload. Dark is the
+ * default — the class is only skipped when the user explicitly chose light.
+ * The class is applied imperatively (React never renders it), and
+ * suppressHydrationWarning covers the attribute diff at hydration.
  */
-const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('pearlsmile-theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d){document.documentElement.classList.add('dark');}}catch(e){}})();`;
+const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('pearlsmile-theme');if(t!=='light'){document.documentElement.classList.add('dark');}}catch(e){}})();`;
 
 export default function RootLayout({
   children,

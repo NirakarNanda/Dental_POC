@@ -40,6 +40,18 @@ export default function LoginPage() {
           delay: 0.15,
         },
       );
+      // Gentle perpetual float for the equipment showcase cards.
+      gsap.utils.toArray<HTMLElement>("[data-float]").forEach((el, i) => {
+        gsap.to(el, {
+          y: i % 2 === 0 ? -14 : 12,
+          rotation: i % 2 === 0 ? 1.1 : -1.1,
+          duration: 3.6 + i * 0.8,
+          yoyo: true,
+          repeat: -1,
+          ease: "sine.inOut",
+          delay: i * 0.5,
+        });
+      });
     },
     { scope: rootRef },
   );
@@ -71,8 +83,88 @@ export default function LoginPage() {
     >
       <AmbientBackground />
 
-      <div className="absolute right-5 top-5 sm:right-8 sm:top-8" data-reveal>
+      <div
+        className="absolute right-5 top-5 z-20 flex items-center gap-3 sm:right-8 sm:top-8"
+        data-reveal
+      >
+        <Link
+          href="/"
+          className="group flex h-10 items-center gap-2 rounded-full border border-ink/10 bg-white/60 px-4 text-sm font-semibold text-ink/70 shadow-soft backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:text-ink dark:border-white/15 dark:bg-white/[0.06] dark:text-white/70 dark:hover:border-white/25 dark:hover:text-white"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="transition-transform duration-300 group-hover:-translate-x-0.5"
+          >
+            <path d="M19 12H5m7-7-7 7 7 7" />
+          </svg>
+          Back
+        </Link>
         <ThemeToggle />
+      </div>
+
+      {/* Equipment showcase — fills the wide-screen space flanking the card */}
+      <div
+        className="pointer-events-none absolute inset-y-0 left-0 z-0 hidden w-[34%] items-center justify-center xl:flex"
+        aria-hidden="true"
+      >
+        <div className="relative w-full max-w-[400px] -translate-y-6 pl-[6%]">
+          <div
+            className="absolute -inset-10 rounded-full bg-mint-400/15 blur-3xl dark:bg-mint-300/10"
+            data-reveal
+          />
+          <div data-float className="relative -rotate-3">
+            <div className="overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_80px_-20px_rgba(13,60,60,0.45)] ring-1 ring-ink/10 dark:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] dark:ring-white/15">
+              <img
+                src="/equipment-chair.png"
+                alt=""
+                className="h-auto w-full"
+                draggable={false}
+              />
+            </div>
+            <p
+              className="mt-4 text-center text-[11px] font-semibold uppercase tracking-[0.26em] text-ink/40 dark:text-white/35"
+              data-reveal
+            >
+              Operatory chair
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[34%] items-center justify-center xl:flex"
+        aria-hidden="true"
+      >
+        <div className="relative w-full max-w-[360px] translate-y-10 pr-[6%]">
+          <div
+            className="absolute -inset-10 rounded-full bg-mint-400/15 blur-3xl dark:bg-mint-300/10"
+            data-reveal
+          />
+          <div data-float className="relative rotate-2">
+            <div className="overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_80px_-20px_rgba(13,60,60,0.45)] ring-1 ring-ink/10 dark:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] dark:ring-white/15">
+              <img
+                src="/equipment-tools.png"
+                alt=""
+                className="h-auto w-full"
+                draggable={false}
+              />
+            </div>
+            <p
+              className="mt-4 text-center text-[11px] font-semibold uppercase tracking-[0.26em] text-ink/40 dark:text-white/35"
+              data-reveal
+            >
+              Precision instruments
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="relative w-full max-w-md">
@@ -161,16 +253,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-sm" data-reveal>
-          <Link
-            href="/"
-            className="font-medium text-ink/55 underline-offset-4 transition-colors hover:text-ink hover:underline dark:text-white/50 dark:hover:text-white"
-          >
-            ← Back to PearlSmile
-          </Link>
-        </p>
         <p
-          className="mt-3 text-center text-[11px] tracking-wide text-ink/40 dark:text-white/35"
+          className="mt-6 text-center text-[11px] tracking-wide text-ink/40 dark:text-white/35"
           data-reveal
         >
           © 2026 PearlSmile Dental Studio · Crafted by Nirakar Nanda
