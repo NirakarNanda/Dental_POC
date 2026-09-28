@@ -2,13 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { fraunces } from "@/lib/fonts";
-import { TREATMENTS, type NewAppointment, type Patient } from "@/lib/api";
+import { type NewAppointment, type Patient } from "@/lib/api";
 import { useSettings } from "@/lib/settings";
-
-export const TIME_SLOTS = [
-  "09:30", "10:00", "10:30", "11:00", "11:30", "12:00",
-  "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
-];
+import { dayName, generateSlots, isOffDay } from "@/lib/slots";
 
 interface Props {
   open: boolean;
@@ -27,24 +23,45 @@ function localToday(): string {
 }
 
 export default function BookAppointmentModal({ open, patients, saving, error, onClose, onSave }: Props) {
-  const { defaultFee } = useSettings();
+  const { defaultFee, treatmentPrices, workingHours } = useSettings();
   const [patientSearch, setPatientSearch] = useState("");
   const [patientId, setPatientId] = useState("");
   const [date, setDate] = useState(localToday());
   const [time, setTime] = useState("");
-  const [treatment, setTreatment] = useState("General Checkup");
-  const [fee, setFee] = useState(String(defaultFee));
+  const [treatment, setTreatment] = useState("");
+  const [fee, setFee] = useState("");
+  const [feeTouched, setFeeTouched] = useState(false);
+
+  const priceByName = useMemo(
+    () => new Map(treatmentPrices.map((t) => [t.name, t.fee])),
+    [treatmentPrices],
+  );
+  const priceFor = (name: string) => priceByName.get(name.trim()) ?? defaultFee;
+  const slots = useMemo(() => generateSlots(workingHours), [workingHours]);
+  const closedDay = date ? isOffDay(date, workingHours.offDays) : false;
 
   useEffect(() => {
     if (open) {
+      const first = treatmentPrices[0];
       setPatientSearch("");
       setPatientId("");
       setDate(localToday());
       setTime("");
-      setTreatment("General Checkup");
-      setFee(String(defaultFee));
+      setTreatment(first?.name ?? "General Checkup");
+      setFee(String(first?.fee ?? defaultFee));
+      setFeeTouched(false);
     }
-  }, [open, defaultFee]);
+  }, [open, treatmentPrices, defaultFee]);
+
+  const pickTreatment = (name: string) => {
+    setTreatment(name);
+    if (!feeTouched) setFee(String(priceFor(name)));
+  };
+
+  const pickDate = (d: string) => {
+    setDate(d);
+    if (d && isOffDay(d, workingHours.offDays)) setTime("");
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -75,7 +92,7 @@ export default function BookAppointmentModal({ open, patients, saving, error, on
       patientId,
       date,
       time,
-      treatment: treatment.trim() || "General Checkup",
+      treatment: treatment.trim() || treatmentPrices[0]?.name || "General Checkup",
       fee: Number.isNaN(feeNum) ? defaultFee : Math.max(0, feeNum),
     });
   };
@@ -155,15 +172,20 @@ export default function BookAppointmentModal({ open, patients, saving, error, on
               required
               value={date}
               min={localToday()}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => pickDate(e.target.value)}
               className={inputCls}
             />
           </div>
 
           <div>
             <span className={labelCls}>Time slot *</span>
-            <div className="mt-1 flex flex-wrap gap-2">
-              {TIME_SLOTS.map((slot) => (
+            {closedDay ? (
+              <p className="mt-1 rounded-xl border border-dashed border-ink/20 bg-ink/[0.03] px-4 py-3 text-[13px] text-ink/60 dark:border-white/15 dark:bg-white/[0.03] dark:text-white/55">
+                The clinic is closed on {dayName(date)}s — pick another day.
+              </p>
+            ) : (
+              <div className="mt-1 flex flex-wrap gap-2">
+                {slots.map((slot) => (
                 <button
                   key={slot}
                   type="button"
@@ -178,7 +200,8 @@ export default function BookAppointmentModal({ open, patients, saving, error, on
                   {slot}
                 </button>
               ))}
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -187,14 +210,14 @@ export default function BookAppointmentModal({ open, patients, saving, error, on
               <input
                 id="ba-treatment"
                 value={treatment}
-                onChange={(e) => setTreatment(e.target.value)}
+                onChange={(e) => pickTreatment(e.target.value)}
                 placeholder="General Checkup"
                 list="ba-treatments"
                 className={inputCls}
               />
               <datalist id="ba-treatments">
-                {TREATMENTS.map((t) => (
-                  <option key={t} value={t} />
+                {treatmentPrices.map((t) => (
+                  <option key={t.name} value={t.name} />
                 ))}
               </datalist>
             </div>
@@ -206,8 +229,11 @@ export default function BookAppointmentModal({ open, patients, saving, error, on
                 min="0"
                 step="50"
                 value={fee}
-                onChange={(e) => setFee(e.target.value)}
-                placeholder="500"
+                onChange={(e) => {
+                  setFee(e.target.value);
+                  setFeeTouched(true);
+                }}
+                placeholder={String(priceFor(treatment))}
                 className={inputCls}
               />
             </div>

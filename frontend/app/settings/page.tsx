@@ -10,6 +10,7 @@ import { fraunces } from "@/lib/fonts";
 import { useRequireAuth } from "@/lib/auth";
 import { useSettings } from "@/lib/settings";
 import { useTheme, type ThemeMode } from "@/components/theme/ThemeProvider";
+import type { TreatmentPrice, WorkingHours } from "@/lib/settings";
 
 const inputCls =
   "w-full rounded-xl border border-ink/10 bg-white/70 px-4 py-3 text-[15px] text-ink placeholder:text-ink/30 outline-none transition focus:border-mint-500 focus:ring-2 focus:ring-mint-500/25 dark:border-white/10 dark:bg-white/[0.06] dark:text-[#edf7f5] dark:placeholder:text-white/25";
@@ -43,6 +44,226 @@ function Section({
   );
 }
 
+function TreatmentPrices() {
+  const { treatmentPrices, update } = useSettings();
+  const toast = useToast();
+  const [rows, setRows] = useState<TreatmentPrice[]>(treatmentPrices);
+
+  useEffect(() => {
+    setRows(treatmentPrices);
+  }, [treatmentPrices]);
+
+  const setFeeFor = (name: string, feeStr: string) => {
+    const n = parseInt(feeStr.replace(/[^0-9]/g, ""), 10);
+    setRows((prev) =>
+      prev.map((t) =>
+        t.name === name ? { ...t, fee: Number.isNaN(n) ? 0 : n } : t,
+      ),
+    );
+  };
+
+  const save = () => {
+    update({ treatmentPrices: rows });
+    toast("Price list saved — fees now auto-fill when booking.", "success");
+  };
+
+  return (
+    <Section
+      kicker="Price list"
+      title="Treatment prices"
+      blurb="Your standard fee for each treatment. When you book, picking a treatment fills its fee automatically — you can still adjust it per appointment."
+    >
+      <div className="overflow-hidden rounded-2xl border border-ink/10 dark:border-white/10">
+        {rows.map((t, i) => (
+          <div
+            key={t.name}
+            className={`flex items-center gap-4 px-4 py-3 sm:px-5 ${
+              i % 2 === 1 ? "bg-ink/[0.025] dark:bg-white/[0.03]" : ""
+            }`}
+          >
+            <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{t.name}</span>
+            <div className="flex w-32 shrink-0 items-center gap-1.5">
+              <span className="text-sm text-ink/50 dark:text-white/45">₹</span>
+              <input
+                value={String(t.fee)}
+                onChange={(e) => setFeeFor(t.name, e.target.value)}
+                inputMode="numeric"
+                aria-label={`Fee for ${t.name}`}
+                className="w-full rounded-lg border border-ink/10 bg-white/70 px-2.5 py-1.5 text-right text-sm font-semibold outline-none transition focus:border-mint-500 focus:ring-2 focus:ring-mint-500/25 dark:border-white/10 dark:bg-white/[0.06]"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={save}
+        className="mt-5 rounded-full bg-ink px-7 py-3 text-[15px] font-semibold tracking-wide text-ivory shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift dark:bg-mint-300 dark:text-abyss-950"
+      >
+        Save price list
+      </button>
+    </Section>
+  );
+}
+
+const DAY_CHIPS = ["S", "M", "T", "W", "T", "F", "S"];
+const DAY_NAMES_FULL = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+function WorkingHoursSection() {
+  const { workingHours, update } = useSettings();
+  const toast = useToast();
+  const [wh, setWh] = useState<WorkingHours>(workingHours);
+
+  useEffect(() => {
+    setWh(workingHours);
+  }, [workingHours]);
+
+  const set = <K extends keyof WorkingHours>(k: K, v: WorkingHours[K]) =>
+    setWh((prev) => ({ ...prev, [k]: v }));
+
+  const toggleDay = (d: number) =>
+    set(
+      "offDays",
+      wh.offDays.includes(d)
+        ? wh.offDays.filter((x) => x !== d)
+        : [...wh.offDays, d].sort(),
+    );
+
+  const save = () => {
+    if (wh.open >= wh.close) {
+      toast("Opening time must be before closing time.", "error");
+      return;
+    }
+    if (wh.lunchStart >= wh.lunchEnd) {
+      toast("Lunch break start must be before its end.", "error");
+      return;
+    }
+    update({ workingHours: wh });
+    toast("Working hours saved — booking slots update right away.", "success");
+  };
+
+  const timeInputCls = `${inputCls} dark:[color-scheme:dark]`;
+
+  return (
+    <Section
+      kicker="Schedule"
+      title="Working hours"
+      blurb="Define the clinic day. The booking dialog builds its time slots from this — and blocks out your lunch break and weekly off days automatically."
+    >
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div>
+          <label className={labelCls} htmlFor="wh-open">Opens</label>
+          <input
+            id="wh-open"
+            type="time"
+            value={wh.open}
+            onChange={(e) => set("open", e.target.value)}
+            className={timeInputCls}
+          />
+        </div>
+        <div>
+          <label className={labelCls} htmlFor="wh-close">Closes</label>
+          <input
+            id="wh-close"
+            type="time"
+            value={wh.close}
+            onChange={(e) => set("close", e.target.value)}
+            className={timeInputCls}
+          />
+        </div>
+        <div>
+          <label className={labelCls} htmlFor="wh-slot">Slot length</label>
+          <select
+            id="wh-slot"
+            value={wh.slotMinutes}
+            onChange={(e) => set("slotMinutes", Number(e.target.value) as WorkingHours["slotMinutes"])}
+            className={`${inputCls} cursor-pointer appearance-none dark:[color-scheme:dark]`}
+          >
+            {[15, 30, 45, 60].map((m) => (
+              <option key={m} value={m}>
+                {m} min
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <span className={labelCls}>Preview</span>
+          <p className="rounded-xl bg-ink/[0.04] px-3 py-2.5 text-[13px] font-medium dark:bg-white/[0.05]">
+            {wh.open} – {wh.close}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls} htmlFor="wh-lunch-start">Lunch break from</label>
+          <input
+            id="wh-lunch-start"
+            type="time"
+            value={wh.lunchStart}
+            onChange={(e) => set("lunchStart", e.target.value)}
+            className={timeInputCls}
+          />
+        </div>
+        <div>
+          <label className={labelCls} htmlFor="wh-lunch-end">Lunch break to</label>
+          <input
+            id="wh-lunch-end"
+            type="time"
+            value={wh.lunchEnd}
+            onChange={(e) => set("lunchEnd", e.target.value)}
+            className={timeInputCls}
+          />
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <span className={labelCls}>Weekly off days</span>
+        <div className="mt-1 flex gap-2">
+          {DAY_CHIPS.map((label, d) => {
+            const off = wh.offDays.includes(d);
+            return (
+              <button
+                key={d}
+                type="button"
+                onClick={() => toggleDay(d)}
+                aria-pressed={off}
+                title={DAY_NAMES_FULL[d]}
+                className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-all ${
+                  off
+                    ? "bg-ink text-ivory shadow-soft dark:bg-mint-300 dark:text-abyss-950"
+                    : "border border-ink/15 bg-white/50 text-ink/60 hover:border-ink/40 dark:border-white/15 dark:bg-white/[0.05] dark:text-white/60 dark:hover:border-white/40"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-[12px] text-ink/45 dark:text-white/40">
+          Booking is blocked on off days — the dialog will say the clinic is closed.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={save}
+        className="mt-6 rounded-full bg-ink px-7 py-3 text-[15px] font-semibold tracking-wide text-ivory shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift dark:bg-mint-300 dark:text-abyss-950"
+      >
+        Save working hours
+      </button>
+    </Section>
+  );
+}
+
 function AppointmentDefaults() {
   const { defaultFee, update } = useSettings();
   const toast = useToast();
@@ -66,7 +287,7 @@ function AppointmentDefaults() {
     <Section
       kicker="Appointments"
       title="Booking defaults"
-      blurb="Your standard consultation fee, pre-filled whenever you book an appointment. You can still change it per booking."
+      blurb="Fallback fee used when a treatment isn't on your price list. Treatments with a set price always win."
     >
       <div className="flex flex-wrap items-end gap-4">
         <div className="w-44">
@@ -330,7 +551,9 @@ function ChangePassword() {
 }
 
 const SECTIONS = [
-  { value: "appointments", label: "Booking defaults", hint: "Your standard consultation fee, pre-filled on every booking." },
+  { value: "prices", label: "Treatment prices", hint: "Set the fee for each treatment — auto-filled when you book." },
+  { value: "hours", label: "Working hours", hint: "Open hours, slot length, lunch break, and weekly off days." },
+  { value: "appointments", label: "Booking defaults", hint: "Fallback fee used when a treatment has no set price." },
   { value: "appearance", label: "Appearance", hint: "Light, dark, or follow this device automatically." },
   { value: "data", label: "Data export", hint: "Download patients and appointments as CSV files." },
   { value: "security", label: "Security", hint: "Change your sign-in password." },
@@ -378,6 +601,8 @@ function SettingsInner() {
       </div>
 
       <div key={section} className="settings-enter">
+        {section === "prices" && <TreatmentPrices />}
+        {section === "hours" && <WorkingHoursSection />}
         {section === "appointments" && <AppointmentDefaults />}
         {section === "appearance" && <Appearance />}
         {section === "data" && <DataExport />}

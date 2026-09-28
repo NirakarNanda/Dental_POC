@@ -19,6 +19,7 @@ export interface Patient {
 export interface Appointment {
   id: string;
   patientName: string;
+  phone?: string;
   time: string;
   treatment: string;
   status: string;

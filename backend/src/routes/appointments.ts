@@ -23,13 +23,17 @@ function isRealDate(s: string): boolean {
 // GET /api/appointments/today -> 200 {appointments:[{id, patientName, time, treatment, status, fee}]}
 appointmentsRouter.get("/today", async (req, res) => {
   const today = localDateKey();
-  const all = await getDb().getAppointments();
+  const db = getDb();
+  const all = await db.getAppointments();
+  const patients = await db.getPatients();
+  const phoneById = new Map(patients.map((p) => [p.id, p.phone]));
   const appointments = all
     .filter((a) => a.date === today)
     .sort((a, b) => a.time.localeCompare(b.time))
     .map((a) => ({
       id: a.id,
       patientName: a.patientName,
+      phone: phoneById.get(a.patientId) ?? "",
       time: a.time,
       treatment: a.treatment,
       status: a.status,
