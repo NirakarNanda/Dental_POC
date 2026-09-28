@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
 import ToastProvider from "@/components/Toast";
+import AmbientBackground from "@/components/AmbientBackground";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { fraunces } from "@/lib/fonts";
 import { useRequireAuth } from "@/lib/auth";
@@ -56,8 +57,9 @@ function ShellInner({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-ivory text-ink dark:bg-abyss-950 dark:text-[#edf7f5] lg:flex">
+      <AmbientBackground />
       {/* Sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-ink/10 bg-white/70 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.03] lg:flex">
+      <aside className="relative z-10 hidden w-64 shrink-0 flex-col border-r border-white/60 bg-white/40 backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.05] lg:flex">
         <Link href="/dashboard" className="flex items-center gap-3 px-7 pt-7" aria-label="PearlSmile dashboard">
           <Logo size={36} />
           <span className="leading-none">
@@ -102,15 +104,26 @@ function ShellInner({ children }: { children: React.ReactNode }) {
           </a>
         </nav>
 
-        <div className="mt-auto flex items-center gap-3 px-4 pb-6">
-          <div className="min-w-0 flex-1 rounded-2xl border border-ink/10 bg-white/80 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+        <div className="mt-auto px-4 pb-3">
+          <div className="border-t border-white/60 pt-3 dark:border-white/10">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-ink/40 dark:text-white/35">
+              Developed by
+            </p>
+            <p className="mt-1 text-[13px] font-semibold">Nirakar Nanda</p>
+            <p className="mt-0.5 text-[10px] text-ink/40 dark:text-white/35">
+              © 2026 · MIT Licensed
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 px-4 pb-6">
+          <div className="glass min-w-0 flex-1 rounded-2xl p-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink/45 dark:text-white/40">
               Signed in as
             </p>
             <p className="mt-1 truncate text-sm font-semibold">{user.name}</p>
             <button
               onClick={logout}
-              className="mt-3 w-full rounded-full border border-ink/15 py-2 text-xs font-semibold text-ink/70 transition-colors hover:border-ink/40 hover:text-ink dark:border-white/15 dark:text-white/60 dark:hover:border-white/40 dark:hover:text-white"
+              className="glass-pill mt-3 w-full rounded-full bg-white/40 py-2 text-xs font-semibold text-ink/70 transition-colors hover:bg-white/70 hover:text-ink dark:bg-white/[0.06] dark:text-white/60 dark:hover:bg-white/[0.12] dark:hover:text-white"
             >
               Sign out
             </button>
@@ -120,7 +133,7 @@ function ShellInner({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-ink/10 bg-ivory/90 px-4 py-2.5 backdrop-blur-xl dark:border-white/10 dark:bg-abyss-950/90 lg:hidden">
+      <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-white/60 bg-ivory/60 px-4 py-2.5 backdrop-blur-2xl dark:border-white/10 dark:bg-abyss-950/70 lg:hidden">
         <Link href="/dashboard" className="flex shrink-0 items-center" aria-label="PearlSmile dashboard">
           <Logo size={30} />
         </Link>
@@ -155,7 +168,7 @@ function ShellInner({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Main */}
-      <main className="min-w-0 flex-1 px-5 py-8 sm:px-8 lg:py-10">
+      <main className="relative z-10 min-w-0 flex-1 px-5 py-8 sm:px-8 lg:py-10">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
     </div>

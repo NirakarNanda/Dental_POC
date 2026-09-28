@@ -339,8 +339,8 @@ export default function LandingPage() {
         data-fade
         className="relative z-20 pb-6 text-center text-[11px] font-medium tracking-wide text-[#0e2a28]/40 dark:text-white/35"
       >
-        © {new Date().getFullYear()} PearlSmile Dental Studio · Demo
-        proof-of-concept
+        © 2026 PearlSmile Dental Studio · Designed &amp; built by Nirakar
+        Nanda
       </footer>
     </section>
   );

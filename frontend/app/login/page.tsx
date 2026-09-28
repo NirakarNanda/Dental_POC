@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { fraunces } from "@/lib/fonts";
 import { gsap, useGSAP } from "@/lib/gsap";
 import Logo from "@/components/Logo";
+import AmbientBackground from "@/components/AmbientBackground";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 
 const DEMO_EMAIL = "doctor@pearlsmile.dental";
@@ -62,7 +63,7 @@ export default function LoginPage() {
   };
 
   const inputCls =
-    "w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 outline-none transition-all focus:border-ink/40 focus:ring-4 focus:ring-ink/5 dark:border-white/15 dark:bg-white/[0.05] dark:text-[#edf7f5] dark:placeholder:text-white/30 dark:focus:border-white/40 dark:focus:ring-white/5";
+    "w-full rounded-xl border border-white/60 bg-white/55 px-4 py-3 text-[15px] text-ink backdrop-blur-md placeholder:text-ink/35 outline-none transition-all focus:border-ink/40 focus:bg-white/85 focus:ring-4 focus:ring-ink/5 dark:border-white/10 dark:bg-white/[0.06] dark:text-[#edf7f5] dark:placeholder:text-white/30 dark:focus:border-white/40 dark:focus:bg-white/[0.09] dark:focus:ring-white/5";
   const labelCls =
     "mb-2 block text-[10px] font-semibold uppercase tracking-[0.22em] text-ink/50 dark:text-white/45";
 
@@ -71,12 +72,7 @@ export default function LoginPage() {
       ref={rootRef}
       className="relative flex min-h-svh items-center justify-center overflow-hidden bg-ivory px-5 py-12 text-ink dark:bg-abyss-950 dark:text-[#edf7f5]"
     >
-      {/* quiet editorial backdrop */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 left-[12%] h-72 w-72 rounded-full bg-[#dfe4cd]/60 blur-3xl dark:bg-mint-900/25" />
-        <div className="absolute -bottom-28 right-[8%] h-80 w-80 rounded-full bg-[#c2d8cf]/50 blur-3xl dark:bg-abyss-800/60" />
-        <div className="hero-grain absolute inset-0 opacity-[0.05] dark:opacity-[0.07]" />
-      </div>
+      <AmbientBackground />
 
       <div className="absolute right-5 top-5 sm:right-8 sm:top-8" data-reveal>
         <ThemeToggle />
@@ -85,7 +81,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md">
         <div
           data-reveal
-          className="rounded-[1.75rem] border border-ink/10 bg-white/90 p-8 shadow-soft backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04] sm:p-10"
+          className="glass-deep rounded-[1.75rem] p-8 sm:p-10"
         >
           <div className="flex flex-col items-center text-center">
             <Logo size={52} />
@@ -152,7 +148,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-7 rounded-2xl border border-dashed border-ink/15 p-4 dark:border-white/15">
+          <div className="glass-pill mt-7 rounded-2xl bg-white/40 p-4 dark:bg-white/[0.05]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink/45 dark:text-white/40">
               Demo credentials
             </p>
@@ -180,6 +176,12 @@ export default function LoginPage() {
           >
             ← Back to PearlSmile
           </Link>
+        </p>
+        <p
+          className="mt-3 text-center text-[11px] tracking-wide text-ink/40 dark:text-white/35"
+          data-reveal
+        >
+          © 2026 PearlSmile Dental Studio · Crafted by Nirakar Nanda
         </p>
       </div>
     </div>

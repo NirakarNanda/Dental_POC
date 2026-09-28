@@ -88,3 +88,7 @@ Patient fields: `name, age, phone, email?, treatment, status (active|completed|f
 - CORS in dev reflects any `http://localhost:<port>` / `127.0.0.1` origin with credentials.
 - `express-session` uses the default in-memory session store — fine for the demo; swap in a Mongo store for production.
 - Dashboard revenue figures and the weekly chart are client-side estimates from patient data — wire to real analytics later.
+
+## License
+
+MIT — see [LICENSE](./LICENSE). © 2026 Nirakar Nanda.

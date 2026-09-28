@@ -40,7 +40,7 @@ function ConfirmDialog({
       aria-label="Confirm delete"
     >
       <div
-        className="w-full max-w-sm rounded-3xl border border-ink/10 bg-white p-6 shadow-lift dark:border-white/10 dark:bg-abyss-900 sm:p-7"
+        className="glass-deep w-full max-w-sm rounded-3xl p-6 sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className={`${fraunces.className} text-[1.4rem] font-light tracking-tight`}>
@@ -266,7 +266,7 @@ function PatientsContent() {
         )}
 
         {/* toolbar */}
-        <div data-reveal className="mt-8 rounded-3xl border border-ink/10 bg-white p-4 shadow-soft dark:border-white/10 dark:bg-white/[0.03] sm:p-5">
+        <div data-reveal className="glass mt-8 rounded-3xl p-4 sm:p-5">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <div className="relative flex-1">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink/35 dark:text-white/30">
@@ -277,7 +277,7 @@ function PatientsContent() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search name, phone or treatment…"
-                className="w-full rounded-xl border border-ink/12 bg-ivory/60 py-3 pl-11 pr-4 text-sm outline-none transition-all placeholder:text-ink/35 focus:border-ink/35 focus:bg-white focus:ring-4 focus:ring-ink/5 dark:border-white/12 dark:bg-white/[0.04] dark:placeholder:text-white/30 dark:focus:border-white/35 dark:focus:bg-white/[0.06] dark:focus:ring-white/5"
+                className="w-full rounded-xl border border-white/60 bg-white/50 py-3 pl-11 pr-4 text-sm backdrop-blur-md outline-none transition-all placeholder:text-ink/35 focus:border-ink/35 focus:bg-white/80 focus:ring-4 focus:ring-ink/5 dark:border-white/10 dark:bg-white/[0.06] dark:placeholder:text-white/30 dark:focus:border-white/35 dark:focus:bg-white/[0.09] dark:focus:ring-white/5"
               />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -285,10 +285,10 @@ function PatientsContent() {
                 <button
                   key={f.key}
                   onClick={() => setFilter(f.key)}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition-all ${
+                  className={`glass-pill rounded-full px-4 py-2 text-xs font-semibold capitalize transition-all ${
                     filter === f.key
                       ? "bg-ink text-ivory dark:bg-mint-300 dark:text-abyss-950"
-                      : "border border-ink/12 text-ink/60 hover:border-ink/30 hover:text-ink dark:border-white/12 dark:text-white/55 dark:hover:border-white/30 dark:hover:text-white"
+                      : "bg-white/40 text-ink/60 hover:bg-white/70 hover:text-ink dark:bg-white/[0.05] dark:text-white/55 dark:hover:bg-white/[0.1] dark:hover:text-white"
                   }`}
                 >
                   {f.label}
@@ -302,7 +302,7 @@ function PatientsContent() {
         </div>
 
         {/* desktop table */}
-        <div data-reveal className="mt-6 hidden overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-soft dark:border-white/10 dark:bg-white/[0.03] md:block">
+        <div data-reveal className="glass mt-6 hidden overflow-hidden rounded-3xl md:block">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-ink/10 text-[10px] uppercase tracking-[0.18em] text-ink/45 dark:border-white/10 dark:text-white/40">
@@ -401,7 +401,7 @@ function PatientsContent() {
               </div>
             ))
           ) : visible.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-ink/15 bg-white p-10 text-center dark:border-white/15 dark:bg-white/[0.03]">
+            <div className="glass rounded-3xl border border-dashed border-ink/15 p-10 text-center dark:border-white/15">
               <p className={`${fraunces.className} text-xl font-light`}>No patients found</p>
               <p className="mt-1.5 text-sm text-ink/55 dark:text-white/50">
                 {patients.length === 0
@@ -422,7 +422,7 @@ function PatientsContent() {
               <div
                 key={p.id}
                 data-reveal
-                className="rounded-3xl border border-ink/10 bg-white p-5 shadow-soft dark:border-white/10 dark:bg-white/[0.03]"
+                className="glass rounded-3xl p-5"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>

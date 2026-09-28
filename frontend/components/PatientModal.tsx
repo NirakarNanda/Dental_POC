@@ -84,7 +84,7 @@ export default function PatientModal({ open, patient, saving, error, onClose, on
   };
 
   const inputCls =
-    "w-full rounded-xl border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 outline-none transition-all focus:border-ink/40 focus:ring-4 focus:ring-ink/5 dark:border-white/15 dark:bg-white/[0.05] dark:text-[#edf7f5] dark:placeholder:text-white/30 dark:focus:border-white/40 dark:focus:ring-white/5";
+    "w-full rounded-xl border border-white/60 bg-white/55 px-3.5 py-2.5 text-sm text-ink backdrop-blur-md placeholder:text-ink/35 outline-none transition-all focus:border-ink/40 focus:bg-white/85 focus:ring-4 focus:ring-ink/5 dark:border-white/10 dark:bg-white/[0.06] dark:text-[#edf7f5] dark:placeholder:text-white/30 dark:focus:border-white/40 dark:focus:bg-white/[0.09] dark:focus:ring-white/5";
   const labelCls = "mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/50 dark:text-white/45";
 
   return (
@@ -96,7 +96,7 @@ export default function PatientModal({ open, patient, saving, error, onClose, on
       aria-label={patient ? "Edit patient" : "Add patient"}
     >
       <div
-        className="animate-fade-up slim-scroll max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] border border-ink/10 bg-white p-6 shadow-lift dark:border-white/10 dark:bg-abyss-900 sm:p-8"
+        className="animate-fade-up slim-scroll glass-deep max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] p-6 sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">

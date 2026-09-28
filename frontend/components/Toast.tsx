@@ -19,7 +19,7 @@ export const useToast = () => useContext(ToastCtx);
 const KIND_STYLES: Record<ToastKind, string> = {
   success: "border-ink/20 bg-ink text-ivory dark:border-white/15 dark:bg-mint-300 dark:text-abyss-950",
   error: "border-red-900/20 bg-red-800 text-white dark:border-red-400/25 dark:bg-red-700",
-  info: "border-ink/15 bg-white text-ink dark:border-white/15 dark:bg-abyss-800 dark:text-[#edf7f5]",
+  info: "glass-deep text-ink dark:text-[#edf7f5]",
 };
 
 export default function ToastProvider({

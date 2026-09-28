@@ -20,7 +20,7 @@ import { useRequireAuth } from "@/lib/auth";
 
 function StatSkeleton() {
   return (
-    <div className="rounded-3xl border border-ink/10 bg-white p-6 dark:border-white/10 dark:bg-white/[0.03]">
+    <div className="glass rounded-3xl p-6">
       <div className="skeleton h-10 w-10 rounded-xl" />
       <div className="skeleton mt-4 h-8 w-20 rounded-lg" />
       <div className="skeleton mt-2 h-4 w-28 rounded-lg" />
@@ -42,9 +42,9 @@ function StatCard({
   return (
     <div
       data-reveal
-      className="rounded-3xl border border-ink/10 bg-white p-6 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift dark:border-white/10 dark:bg-white/[0.03]"
+      className="glass rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1"
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink/[0.06] text-ink/70 dark:bg-white/[0.07] dark:text-mint-200">
+      <div className="glass-pill flex h-11 w-11 items-center justify-center rounded-xl bg-white/50 text-ink/70 dark:bg-white/[0.07] dark:text-mint-200">
         {icon}
       </div>
       <p className={`${fraunces.className} mt-4 text-[2rem] font-light leading-none tracking-tight`}>
@@ -85,13 +85,14 @@ const ICONS = {
 
 function apptChip(status: string) {
   const s = status.toLowerCase();
+  const base = "glass-pill ";
   if (s.includes("confirm"))
-    return "bg-[#dcebe8] text-[#2f5d55] dark:bg-mint-900/50 dark:text-mint-200";
+    return base + "bg-[#dcebe8]/70 text-[#2f5d55] dark:bg-mint-500/15 dark:text-mint-200";
   if (s.includes("complete") || s.includes("done"))
-    return "bg-[#e9e2d6] text-[#6d5a3e] dark:bg-white/10 dark:text-white/70";
+    return base + "bg-[#e9e2d6]/70 text-[#6d5a3e] dark:bg-white/[0.08] dark:text-white/70";
   if (s.includes("cancel"))
-    return "bg-red-100/70 text-red-800 dark:bg-red-950/50 dark:text-red-200";
-  return "bg-[#f3e8c8] text-[#8a6d1f] dark:bg-amber-950/50 dark:text-amber-200";
+    return base + "bg-red-100/70 text-red-800 dark:bg-red-500/15 dark:text-red-200";
+  return base + "bg-[#f3e8c8]/70 text-[#8a6d1f] dark:bg-amber-400/15 dark:text-amber-200";
 }
 
 export default function DashboardPage() {
@@ -269,7 +270,7 @@ export default function DashboardPage() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-5">
           {/* today's appointments */}
-          <div data-reveal className="rounded-3xl border border-ink/10 bg-white p-6 shadow-soft dark:border-white/10 dark:bg-white/[0.03] sm:p-7 lg:col-span-3">
+          <div data-reveal className="glass rounded-3xl p-6 sm:p-7 lg:col-span-3">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className={`${fraunces.className} text-[1.45rem] font-light tracking-tight`}>
@@ -298,7 +299,7 @@ export default function DashboardPage() {
                   </div>
                 ))
               ) : appointments.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-ink/15 p-10 text-center dark:border-white/15">
+                <div className="glass rounded-2xl border border-dashed border-ink/15 p-10 text-center dark:border-white/15">
                   <p className={`${fraunces.className} text-lg font-light`}>No appointments today</p>
                   <p className="mt-1 text-xs text-ink/50 dark:text-white/45">
                     Enjoy the calm — or add a patient to fill the chair.
@@ -328,7 +329,7 @@ export default function DashboardPage() {
 
           {/* chart + quick actions */}
           <div className="flex flex-col gap-6 lg:col-span-2">
-            <div data-reveal className="rounded-3xl border border-ink/10 bg-white p-6 shadow-soft dark:border-white/10 dark:bg-white/[0.03] sm:p-7">
+            <div data-reveal className="glass rounded-3xl p-6 sm:p-7">
               <h2 className={`${fraunces.className} text-[1.45rem] font-light tracking-tight`}>
                 Visits this week
               </h2>
@@ -355,18 +356,18 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div data-reveal className="rounded-3xl bg-ink p-6 text-ivory shadow-soft dark:bg-white/[0.05] dark:text-[#edf7f5] sm:p-7">
+            <div data-reveal className="rounded-3xl border border-ink/20 bg-ink/75 p-6 text-ivory shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_12px_40px_-12px_rgba(4,47,46,0.45)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.06] dark:text-[#edf7f5] sm:p-7">
               <h2 className={`${fraunces.className} text-[1.45rem] font-light tracking-tight`}>
                 Quick actions
               </h2>
               <div className="mt-4 grid grid-cols-1 gap-2">
-                <Link href="/patients?add=1" className="rounded-xl border border-ivory/15 px-4 py-3 text-sm font-medium transition-colors hover:bg-ivory/10 dark:border-white/15 dark:hover:bg-white/10">
+                <Link href="/patients?add=1" className="rounded-xl border border-ivory/15 bg-white/[0.06] px-4 py-3 text-sm font-medium backdrop-blur transition-colors hover:bg-white/[0.12] dark:border-white/15 dark:hover:bg-white/10">
                   Add a new patient
                 </Link>
-                <Link href="/patients" className="rounded-xl border border-ivory/15 px-4 py-3 text-sm font-medium transition-colors hover:bg-ivory/10 dark:border-white/15 dark:hover:bg-white/10">
+                <Link href="/patients" className="rounded-xl border border-ivory/15 bg-white/[0.06] px-4 py-3 text-sm font-medium backdrop-blur transition-colors hover:bg-white/[0.12] dark:border-white/15 dark:hover:bg-white/10">
                   Book an appointment
                 </Link>
-                <Link href="/patients?status=follow-up" className="rounded-xl border border-ivory/15 px-4 py-3 text-sm font-medium transition-colors hover:bg-ivory/10 dark:border-white/15 dark:hover:bg-white/10">
+                <Link href="/patients?status=follow-up" className="rounded-xl border border-ivory/15 bg-white/[0.06] px-4 py-3 text-sm font-medium backdrop-blur transition-colors hover:bg-white/[0.12] dark:border-white/15 dark:hover:bg-white/10">
                   View pending follow-ups
                 </Link>
               </div>
@@ -376,7 +377,7 @@ export default function DashboardPage() {
 
         {/* upcoming visits strip */}
         {!loading && patients.length > 0 && (
-          <div data-reveal className="mt-6 rounded-3xl border border-ink/10 bg-white p-6 shadow-soft dark:border-white/10 dark:bg-white/[0.03] sm:p-7">
+          <div data-reveal className="glass mt-6 rounded-3xl p-6 sm:p-7">
             <h2 className={`${fraunces.className} text-[1.45rem] font-light tracking-tight`}>
               Upcoming visits
             </h2>
@@ -386,7 +387,7 @@ export default function DashboardPage() {
                 .sort((a, b) => +new Date(a.nextVisit) - +new Date(b.nextVisit))
                 .slice(0, 6)
                 .map((p) => (
-                  <div key={p.id} className="rounded-2xl border border-ink/10 p-4 transition-all hover:-translate-y-0.5 hover:shadow-soft dark:border-white/10">
+                  <div key={p.id} className="glass-pill rounded-2xl bg-white/40 p-4 transition-all hover:-translate-y-0.5 dark:bg-white/[0.05]">
                     <p className="text-sm font-semibold">{p.name}</p>
                     <p className="mt-0.5 text-xs text-ink/50 dark:text-white/45">{p.treatment}</p>
                     <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-ink/60 dark:text-mint-200/80">
