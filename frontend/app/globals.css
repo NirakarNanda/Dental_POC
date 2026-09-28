@@ -201,24 +201,12 @@ body {
   }
 }
 
-/* ---------- Landing flora strip ---------- */
-/* Drifting petal/pollen accents; deepened in dark mode */
-:root {
-  --flora-petal: #f4f0e3;
-}
-.dark {
-  --flora-petal: #cfe3da;
-}
-/* GSAP drifts each 120%-wide photographic layer horizontally */
-.flora-layer {
-  transform-origin: 50% 100%;
-  will-change: transform;
-}
-/* photo edges melt into the background instead of cutting off —
+/* ---------- Landing orchid pot scene ---------- */
+/* The orchid photograph melts into the background instead of cutting off —
    a LONG top fade (fully transparent until 30%, full opacity only in the
    bottom quarter) plus soft left/right fades, so no horizontal seam
    band is ever perceptible */
-.flora-photo {
+.pot-photo {
   -webkit-mask-image:
     linear-gradient(to bottom, transparent 0%, transparent 30%, black 75%),
     linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
@@ -227,6 +215,11 @@ body {
     linear-gradient(to bottom, transparent 0%, transparent 30%, black 75%),
     linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
   mask-composite: intersect;
+}
+/* barely-there slow zoom keeps the still-life alive */
+.pot-zoom {
+  transform-origin: 50% 100%;
+  will-change: transform;
 }
 
 /* slow, barely-there drift for the ambient mesh gradient */

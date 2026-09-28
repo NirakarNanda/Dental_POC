@@ -6,7 +6,7 @@ import Link from "next/link";
 import { fraunces } from "@/lib/fonts";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/theme/ThemeToggle";
-import FloraStrip from "@/components/FloraStrip";
+import PotScene, { Butterflies } from "@/components/PotScene";
 import { gsap, useGSAP } from "@/lib/gsap";
 
 const AVATARS = [
@@ -20,9 +20,10 @@ const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
 /**
  * PearlSmile POC entry page — like the botanical reference:
- * a crystal-clear bubble overlapping the headline (text stays visible THROUGH
- * the glass), a pristine tooth floating inside it, and wildflowers swaying
- * along the bottom edge.
+ * a 3D sunlit crystal bubble overlapping the headline (text stays visible
+ * THROUGH the glass), a pristine tooth floating inside it, an elegant
+ * orchid pot along the bottom edge, and delicate butterflies wandering
+ * the hero.
  */
 export default function LandingPage() {
   const rootRef = useRef<HTMLElement>(null);
@@ -42,9 +43,8 @@ export default function LandingPage() {
         gsap.set(".hl-inner", { yPercent: 0 });
         gsap.set("[data-fade]", { opacity: 1, y: 0 });
         gsap.set("[data-orb-enter]", { opacity: 1, scale: 1 });
-        gsap.set(".flora-layer", { xPercent: 0, skewX: 0 });
+        gsap.set("[data-pot]", { scale: 1 });
         gsap.set("[data-butterfly]", { opacity: 0 });
-        gsap.set("[data-petal]", { opacity: 0.7 });
         return;
       }
 
@@ -133,38 +133,17 @@ export default function LandingPage() {
       // Subtle mouse parallax on the whole bubble group (±18px)
       const fine = window.matchMedia("(pointer: fine)").matches;
 
-      // ── Botanical wind: horizontal drift with irregular gusts ─
-      // Each 120%-wide photo layer drifts ±2–3% sideways with a soft
-      // skewX "breeze bend". Gusts alternate lulls and pushes with
-      // randomized timing — never a perfect pendulum sine. Back and
-      // front layers drift in opposite phases for parallax depth.
-      const gustDrift = (layer: HTMLElement, dir: 1 | -1) => {
-        const push = () => {
-          gsap.to(layer, {
-            xPercent: dir * rand(1.2, 2.8),
-            skewX: dir * rand(0.2, 0.6),
-            duration: rand(2, 3.2),
-            ease: "power1.inOut",
-            onComplete: () => {
-              gsap.to(layer, {
-                xPercent: dir * rand(-0.6, 0.6),
-                skewX: 0,
-                duration: rand(3, 5),
-                ease: "sine.inOut",
-                onComplete: () => gsap.delayedCall(rand(0.4, 1.8), push),
-              });
-            },
-          });
-        };
-        gsap.delayedCall(rand(0, 1.5), push);
-      };
-      const driftFlora = () => {
-        gsap.utils
-          .toArray<HTMLElement>(".flora-layer")
-          .forEach((layer, i) => gustDrift(layer, i === 0 ? -1 : 1));
-      };
+      // ── Orchid pot: barely-there slow zoom, a living still-life ──
+      gsap.to("[data-pot]", {
+        scale: 1.03,
+        duration: 18,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        delay: 2,
+      });
 
-      // ── Butterflies: gentle wandering above the meadow ──
+      // ── Butterflies: gentle wandering around the hero ──
       // Curved drift on randomized waypoints (never a straight line),
       // wings fluttering via a fast scaleY oscillation on the inner
       // wrapper. Small, blurred, ambient — never distracting.
@@ -230,27 +209,8 @@ export default function LandingPage() {
         };
         window.addEventListener("mousemove", onMove);
 
-        driftFlora();
-
-        // ── A few petals drifting on the breeze ────────────────
-        gsap.utils.toArray<HTMLElement>("[data-petal]").forEach((petal) => {
-          gsap.to(petal, {
-            x: () => rand(-70, 70),
-            y: () => rand(-90, -30),
-            rotation: () => rand(-120, 120),
-            duration: () => rand(7, 11),
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            delay: rand(0, 3),
-          });
-        });
-
         return () => window.removeEventListener("mousemove", onMove);
       }
-
-      // No fine pointer: drift the flora layers with the same gust rhythm
-      driftFlora();
     },
     { scope: rootRef },
   );
@@ -395,23 +355,17 @@ export default function LandingPage() {
                       priority
                       className="absolute left-1/2 top-1/2 w-[46%] -translate-x-1/2 -translate-y-1/2"
                     />
-                    {/* the glass itself — pure CSS, guaranteed clean:
-                        hairline rim, transparent center, one tiny specular
-                        highlight. No AI artifacts, ever. */}
-                    <div
-                      role="img"
-                      aria-label="A pristine tooth preserved inside a crystal-clear glass bubble"
-                      className="absolute inset-0 rounded-full border border-[#0e2a28]/30 dark:border-white/55"
-                      style={{
-                        boxShadow:
-                          "inset 0 0 1px rgba(255,255,255,0.35), 0 0 0 7px rgba(255,255,255,0.06), 0 0 54px rgba(255,255,255,0.12)",
-                      }}
-                    >
-                      <div
-                        aria-hidden="true"
-                        className="absolute left-[15%] top-[9%] h-[6%] w-[15%] -rotate-[24deg] rounded-[100%] bg-white/75 blur-[6px] dark:bg-white/85"
-                      />
-                    </div>
+                    {/* the glass itself — a 3D sunlit crystal bubble
+                        (AI-generated, ruthlessly cleaned: no droplets,
+                        no texture, pristine) */}
+                    <Image
+                      src="/orb-3d.png"
+                      alt="A pristine tooth preserved inside a crystal-clear sunlit glass bubble"
+                      width={1600}
+                      height={1600}
+                      priority
+                      className="absolute inset-0 h-full w-full"
+                    />
                     {/* travelling specular highlight, clipped to the bubble */}
                     <div className="absolute inset-0 overflow-hidden rounded-full">
                       <div
@@ -481,26 +435,14 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* ── drifting petals ── */}
-      <span
-        data-petal
-        aria-hidden="true"
-        className="absolute left-[12%] top-[62%] z-[5] h-3 w-4 rounded-full bg-[var(--flora-petal)] opacity-0"
-      />
-      <span
-        data-petal
-        aria-hidden="true"
-        className="absolute right-[16%] top-[70%] z-[5] h-2.5 w-3.5 rounded-full bg-[var(--flora-petal)] opacity-0"
-      />
-      <span
-        data-petal
-        aria-hidden="true"
-        className="absolute left-[46%] top-[78%] z-[5] h-2 w-3 rounded-full bg-[var(--flora-petal)] opacity-0"
-      />
-
-      {/* ── swaying wildflowers along the bottom edge ── */}
+      {/* ── butterflies wandering the hero ── */}
       <div data-fade>
-        <FloraStrip />
+        <Butterflies />
+      </div>
+
+      {/* ── orchid pot scene along the bottom edge ── */}
+      <div data-fade>
+        <PotScene />
       </div>
 
       {/* ── film grain ── */}
