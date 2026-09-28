@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { fraunces } from "@/lib/fonts";
 import { TREATMENTS, type NewAppointment, type Patient } from "@/lib/api";
+import { useSettings } from "@/lib/settings";
 
 export const TIME_SLOTS = [
   "09:30", "10:00", "10:30", "11:00", "11:30", "12:00",
@@ -26,12 +27,13 @@ function localToday(): string {
 }
 
 export default function BookAppointmentModal({ open, patients, saving, error, onClose, onSave }: Props) {
+  const { defaultFee } = useSettings();
   const [patientSearch, setPatientSearch] = useState("");
   const [patientId, setPatientId] = useState("");
   const [date, setDate] = useState(localToday());
   const [time, setTime] = useState("");
   const [treatment, setTreatment] = useState("General Checkup");
-  const [fee, setFee] = useState("500");
+  const [fee, setFee] = useState(String(defaultFee));
 
   useEffect(() => {
     if (open) {
@@ -40,9 +42,9 @@ export default function BookAppointmentModal({ open, patients, saving, error, on
       setDate(localToday());
       setTime("");
       setTreatment("General Checkup");
-      setFee("500");
+      setFee(String(defaultFee));
     }
-  }, [open ]);
+  }, [open, defaultFee]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -68,13 +70,13 @@ export default function BookAppointmentModal({ open, patients, saving, error, on
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!patientId || !date || !time) return;
-    const feeNum = fee === "" ? 500 : parseInt(fee, 10);
+    const feeNum = fee === "" ? defaultFee : parseInt(fee, 10);
     onSave({
       patientId,
       date,
       time,
       treatment: treatment.trim() || "General Checkup",
-      fee: Number.isNaN(feeNum) ? 500 : Math.max(0, feeNum),
+      fee: Number.isNaN(feeNum) ? defaultFee : Math.max(0, feeNum),
     });
   };
 

@@ -108,6 +108,26 @@ appointmentsRouter.patch("/:id", async (req, res) => {
   res.json({ appointment: updated });
 });
 
+// GET /api/appointments?from=yyyy-MM-dd&to=yyyy-MM-dd -> 200 {appointments}
+// Full appointment list (for exports); optional inclusive date range.
+appointmentsRouter.get("/", async (req, res) => {
+  const from = typeof req.query.from === "string" ? req.query.from.trim() : "";
+  const to = typeof req.query.to === "string" ? req.query.to.trim() : "";
+  if (from && !isRealDate(from)) {
+    res.status(400).json({ ok: false, message: "from must be a real calendar date (yyyy-mm-dd)" });
+    return;
+  }
+  if (to && !isRealDate(to)) {
+    res.status(400).json({ ok: false, message: "to must be a real calendar date (yyyy-mm-dd)" });
+    return;
+  }
+  const all = await getDb().getAppointments();
+  const appointments = all.filter(
+    (a) => (!from || a.date >= from) && (!to || a.date <= to),
+  );
+  res.json({ appointments });
+});
+
 // GET /api/appointments/revenue?month=yyyy-MM -> 200 {total, count}
 // Total ₹ collected in the month: sum of fees for non-cancelled appointments.
 appointmentsRouter.get("/revenue", async (req, res) => {

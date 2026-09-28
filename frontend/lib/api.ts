@@ -101,6 +101,15 @@ export const api = {
 
   todayAppointments: () =>
     request<{ appointments: Appointment[] }>("/api/appointments/today"),
+  listAppointments: (from = "", to = "") => {
+    const q = new URLSearchParams();
+    if (from) q.set("from", from);
+    if (to) q.set("to", to);
+    const qs = q.toString();
+    return request<{ appointments: Appointment[] }>(
+      `/api/appointments${qs ? `?${qs}` : ""}`,
+    );
+  },
   createAppointment: (payload: NewAppointment) =>
     request<{ appointment: Appointment }>("/api/appointments", {
       method: "POST",
