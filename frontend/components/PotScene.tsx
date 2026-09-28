@@ -21,7 +21,7 @@ export default function PotScene() {
         className="pot-zoom relative h-[300px] w-[305px] sm:h-[46vh] sm:w-auto sm:aspect-[1260/1240] lg:h-[52vh]"
       >
         <Image
-          src="/orchid-plant.jpg"
+          src="/orchid-plant.png"
           alt=""
           fill
           sizes="(max-width: 640px) 305px, 40vw"
