@@ -13,6 +13,27 @@ const DOCTOR_EMAIL = (process.env.ADMIN_EMAIL ?? "doctor@pearlsmile.dental").tri
 const DOCTOR_PASSWORD = (process.env.ADMIN_PASSWORD ?? "demo1234").trim() || "demo1234";
 const DOCTOR_NAME = "Dr. Ananya Sharma";
 
+// Demo consultation fees (₹) by treatment — used for seeded appointments
+// and shown on the dashboard's revenue card.
+const FEE_BY_TREATMENT: Record<string, number> = {
+  "Teeth Cleaning": 800,
+  "Teeth Whitening": 2500,
+  "Braces & Orthodontics": 1500,
+  "Root Canal": 4500,
+  "Dental Implants": 12000,
+  "Pediatric Dentistry": 700,
+};
+
+function localDateKey(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function localTimeKey(d: Date): string {
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 interface SeedPatient extends Omit<CreatePatientInput, "status"> {
   status: PatientStatus;
 }
@@ -163,6 +184,34 @@ async function main(): Promise<void> {
       await db.createPatient(p);
     }
     console.log(`[seed] created ${PATIENTS.length} patients.`);
+  }
+
+  // Seed appointments from each patient's nextVisit (idempotent: skip when
+  // appointments already exist). Past-dated ones are marked completed so the
+  // demo has real revenue; today's are scheduled so the dashboard has rows.
+  const existingAppts = await db.getAppointments();
+  if (existingAppts.length > 0) {
+    console.log(`[seed] ${existingAppts.length} appointment(s) already present, skipping appointment seed.`);
+  } else {
+    const patients = await db.getPatients();
+    const today = localDateKey(new Date());
+    let created = 0;
+    for (const p of patients) {
+      const d = new Date(p.nextVisit);
+      if (Number.isNaN(d.getTime())) continue;
+      const date = localDateKey(d);
+      await db.addAppointment({
+        patientId: p.id,
+        patientName: p.name,
+        date,
+        time: localTimeKey(d),
+        treatment: p.treatment,
+        fee: FEE_BY_TREATMENT[p.treatment] ?? 500,
+        status: date < today ? "completed" : "scheduled",
+      });
+      created++;
+    }
+    console.log(`[seed] created ${created} appointments.`);
   }
 
   await db.close();

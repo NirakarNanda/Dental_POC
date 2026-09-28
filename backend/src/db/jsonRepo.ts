@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
-import type { CreatePatientInput, Db, Doctor, Patient, UpdatePatientInput } from "../types";
+import type { Appointment, CreatePatientInput, Db, Doctor, Patient, UpdatePatientInput } from "../types";
 
 // Offline fallback store: in-memory with persistence to <backend-root>/data/db.json.
 //
@@ -20,6 +20,7 @@ export const JSON_DB_FILE_PATH = DB_FILE;
 interface FileDbShape {
   doctors: Doctor[];
   patients: Patient[];
+  appointments: Appointment[];
 }
 
 function newId(): string {
@@ -41,10 +42,27 @@ function toPatient(raw: Record<string, unknown>): Patient {
   };
 }
 
+function toAppointment(raw: Record<string, unknown>): Appointment {
+  const status =
+    raw.status === "completed" || raw.status === "cancelled" ? raw.status : "scheduled";
+  return {
+    id: String(raw.id ?? newId()),
+    patientId: String(raw.patientId ?? ""),
+    patientName: String(raw.patientName ?? ""),
+    date: String(raw.date ?? ""),
+    time: String(raw.time ?? ""),
+    treatment: String(raw.treatment ?? "General Checkup"),
+    fee: Number.isFinite(Number(raw.fee)) ? Number(raw.fee) : 0,
+    status,
+    createdAt: String(raw.createdAt ?? new Date().toISOString()),
+  };
+}
+
 export class JsonFileDb implements Db {
   readonly mode = "json" as const;
   private doctors: Doctor[] = [];
   private patients: Patient[] = [];
+  private appointments: Appointment[] = [];
   private dirty = false;
   private flushTimer: NodeJS.Timeout | null = null;
 
@@ -59,10 +77,12 @@ export class JsonFileDb implements Db {
         const raw = JSON.parse(fs.readFileSync(DB_FILE, "utf8")) as {
           doctors?: Doctor[];
           patients?: Record<string, unknown>[];
+          appointments?: Record<string, unknown>[];
         };
         this.doctors = Array.isArray(raw.doctors) ? raw.doctors : [];
         this.patients = Array.isArray(raw.patients) ? raw.patients.map(toPatient) : [];
-        console.log(`[db:json] loaded store: ${DB_FILE} (${this.doctors.length} doctor(s), ${this.patients.length} patient(s))`);
+        this.appointments = Array.isArray(raw.appointments) ? raw.appointments.map(toAppointment) : [];
+        console.log(`[db:json] loaded store: ${DB_FILE} (${this.doctors.length} doctor(s), ${this.patients.length} patient(s), ${this.appointments.length} appointment(s))`);
         return;
       }
       console.log(`[db:json] no store file yet at ${DB_FILE}; starting empty`);
@@ -82,7 +102,7 @@ export class JsonFileDb implements Db {
       this.dirty = false;
       try {
         fs.mkdirSync(DATA_DIR, { recursive: true });
-        const shape: FileDbShape = { doctors: this.doctors, patients: this.patients };
+        const shape: FileDbShape = { doctors: this.doctors, patients: this.patients, appointments: this.appointments };
         fs.writeFileSync(DB_FILE, JSON.stringify(shape, null, 2), "utf8");
       } catch (err) {
         console.error("[db:json] failed to write db.json:", (err as Error).message);
@@ -159,6 +179,28 @@ export class JsonFileDb implements Db {
     return true;
   }
 
+  async getAppointments(): Promise<Appointment[]> {
+    return [...this.appointments].sort((a, b) =>
+      `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`)
+    );
+  }
+
+  async addAppointment(a: Omit<Appointment, "id" | "createdAt">): Promise<Appointment> {
+    const appointment: Appointment = { ...a, id: newId(), createdAt: new Date().toISOString() };
+    this.appointments.push(appointment);
+    this.scheduleFlush();
+    return appointment;
+  }
+
+  async updateAppointment(id: string, patch: Partial<Appointment>): Promise<Appointment | null> {
+    const idx = this.appointments.findIndex((a) => a.id === id);
+    if (idx < 0) return null;
+    const updated: Appointment = { ...this.appointments[idx], ...patch, id };
+    this.appointments[idx] = updated;
+    this.scheduleFlush();
+    return updated;
+  }
+
   async getCounts(): Promise<{ doctors: number; patients: number }> {
     return { doctors: this.doctors.length, patients: this.patients.length };
   }
@@ -172,7 +214,8 @@ export class JsonFileDb implements Db {
     if (this.dirty) {
       try {
         fs.mkdirSync(DATA_DIR, { recursive: true });
-        fs.writeFileSync(DB_FILE, JSON.stringify({ doctors: this.doctors, patients: this.patients }, null, 2), "utf8");
+        const shape: FileDbShape = { doctors: this.doctors, patients: this.patients, appointments: this.appointments };
+        fs.writeFileSync(DB_FILE, JSON.stringify(shape, null, 2), "utf8");
       } catch (err) {
         console.error("[db:json] failed to flush db.json on close:", (err as Error).message);
       }

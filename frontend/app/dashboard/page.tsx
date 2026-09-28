@@ -12,10 +12,11 @@ import {
   YAxis,
 } from "recharts";
 import AppShell from "@/components/AppShell";
+import BookAppointmentModal from "@/components/BookAppointmentModal";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { fraunces } from "@/lib/fonts";
 import { gsap, useGSAP } from "@/lib/gsap";
-import { api, formatDate, type Appointment, type Patient } from "@/lib/api";
+import { api, formatDate, type Appointment, type NewAppointment, type Patient, type RevenueSummary } from "@/lib/api";
 import { useRequireAuth } from "@/lib/auth";
 
 function StatSkeleton() {
@@ -102,28 +103,77 @@ export default function DashboardPage() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [revenue, setRevenue] = useState<RevenueSummary>({ total: 0, count: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [bookOpen, setBookOpen] = useState(false);
+  const [bookSaving, setBookSaving] = useState(false);
+  const [bookError, setBookError] = useState("");
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const load = async (alive: () => boolean) => {
+    try {
+      const [a, p, r] = await Promise.all([
+        api.todayAppointments(),
+        api.listPatients(),
+        api.monthRevenue(),
+      ]);
+      if (!alive()) return;
+      setAppointments(a.appointments);
+      setPatients(p.patients);
+      setRevenue(r);
+      setLoading(false);
+    } catch (e) {
+      if (!alive()) return;
+      setError(e instanceof Error ? e.message : "Failed to load dashboard");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    Promise.all([api.todayAppointments(), api.listPatients()])
-      .then(([a, p]) => {
-        if (!alive) return;
-        setAppointments(a.appointments);
-        setPatients(p.patients);
-        setLoading(false);
-      })
-      .catch((e) => {
-        if (!alive) return;
-        setError(e instanceof Error ? e.message : "Failed to load dashboard");
-        setLoading(false);
-      });
+    load(() => alive);
     return () => {
       alive = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const refresh = () => {
+    load(() => true);
+  };
+
+  const openBooking = () => {
+    setBookError("");
+    setBookOpen(true);
+  };
+
+  const saveBooking = async (payload: NewAppointment) => {
+    setBookSaving(true);
+    setBookError("");
+    try {
+      await api.createAppointment(payload);
+      setBookOpen(false);
+      refresh();
+    } catch (e) {
+      setBookError(e instanceof Error ? e.message : "Booking failed");
+    } finally {
+      setBookSaving(false);
+    }
+  };
+
+  const setStatus = async (id: string, status: "completed" | "cancelled") => {
+    setUpdatingId(id);
+    try {
+      await api.updateAppointment(id, { status });
+      refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   // Calm staggered entrance once data is in
   useGSAP(
@@ -160,15 +210,6 @@ export default function DashboardPage() {
   );
 
   const followUps = patients.filter((p) => p.status === "follow-up").length;
-
-  // Demo revenue estimate: ₹1,500 avg per active/completed patient this month
-  const revenue = useMemo(() => {
-    const thisMonth = new Date().getMonth();
-    const count = patients.filter(
-      (p) => new Date(p.createdAt).getMonth() === thisMonth,
-    ).length;
-    return count * 1500;
-  }, [patients]);
 
   // Weekly chart: distribute today's appointments + upcoming nextVisit across the week
   const weekly = useMemo(() => {
@@ -231,12 +272,12 @@ export default function DashboardPage() {
             >
               + Add patient
             </Link>
-            <Link
-              href="/patients"
+            <button
+              onClick={openBooking}
               className="rounded-full border border-ink/15 bg-white/70 px-6 py-2.5 text-sm font-semibold text-ink transition-all hover:-translate-y-0.5 hover:border-ink/30 dark:border-white/15 dark:bg-white/[0.05] dark:text-white dark:hover:border-white/30"
             >
               Book appointment
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -262,7 +303,7 @@ export default function DashboardPage() {
             <>
               <StatCard icon={ICONS.calendar} value={String(appointments.length)} label="Today's appointments" hint="Scheduled for today" />
               <StatCard icon={ICONS.patients} value={String(patients.length)} label="Total patients" hint="In the clinic records" />
-              <StatCard icon={ICONS.revenue} value={`₹${revenue.toLocaleString("en-IN")}`} label="Revenue this month" hint="Estimated from new patients" />
+              <StatCard icon={ICONS.revenue} value={`₹${revenue.total.toLocaleString("en-IN")}`} label="Revenue this month" hint={revenue.count > 0 ? `From ${revenue.count} appointment${revenue.count === 1 ? "" : "s"}` : "No revenue recorded yet"} />
               <StatCard icon={ICONS.followup} value={String(followUps)} label="Pending follow-ups" hint="Need a callback" />
             </>
           )}
@@ -306,23 +347,50 @@ export default function DashboardPage() {
                   </p>
                 </div>
               ) : (
-                appointments.map((a) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center gap-4 border-b border-ink/[0.07] py-4 transition-colors last:border-0 hover:bg-ink/[0.02] dark:border-white/[0.07] dark:hover:bg-white/[0.02]"
-                  >
-                    <div className="flex h-12 w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-ink/[0.05] dark:bg-white/[0.06]">
-                      <span className="text-sm font-bold leading-none">{a.time}</span>
+                appointments.map((a) => {
+                  const cancelled = a.status === "cancelled";
+                  return (
+                    <div
+                      key={a.id}
+                      className={`flex items-center gap-4 border-b border-ink/[0.07] py-4 transition-colors last:border-0 hover:bg-ink/[0.02] dark:border-white/[0.07] dark:hover:bg-white/[0.02] ${cancelled ? "opacity-50" : ""}`}
+                    >
+                      <div className="flex h-12 w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-ink/[0.05] dark:bg-white/[0.06]">
+                        <span className="text-sm font-bold leading-none">{a.time}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className={`truncate text-sm font-semibold ${cancelled ? "line-through" : ""}`}>
+                          {a.patientName}
+                        </p>
+                        <p className="truncate text-xs text-ink/50 dark:text-white/45">
+                          {a.treatment} · ₹{Number(a.fee).toLocaleString("en-IN")}
+                        </p>
+                      </div>
+                      <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold capitalize ${apptChip(a.status)}`}>
+                        {a.status}
+                      </span>
+                      {a.status === "scheduled" && (
+                        <div className="flex shrink-0 gap-1.5">
+                          <button
+                            onClick={() => setStatus(a.id, "completed")}
+                            disabled={updatingId === a.id}
+                            title="Mark completed"
+                            className="rounded-full border border-ink/15 px-3 py-1 text-xs font-semibold text-ink/70 transition-colors hover:border-ink/40 hover:text-ink disabled:opacity-50 dark:border-white/15 dark:text-white/60 dark:hover:border-white/40 dark:hover:text-white"
+                          >
+                            Complete
+                          </button>
+                          <button
+                            onClick={() => setStatus(a.id, "cancelled")}
+                            disabled={updatingId === a.id}
+                            title="Cancel appointment"
+                            className="rounded-full border border-red-900/20 px-3 py-1 text-xs font-semibold text-red-800/80 transition-colors hover:border-red-900/50 hover:text-red-800 disabled:opacity-50 dark:border-red-400/25 dark:text-red-200/80 dark:hover:border-red-400/60 dark:hover:text-red-200"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">{a.patientName}</p>
-                      <p className="truncate text-xs text-ink/50 dark:text-white/45">{a.treatment}</p>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold capitalize ${apptChip(a.status)}`}>
-                      {a.status}
-                    </span>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
@@ -364,9 +432,9 @@ export default function DashboardPage() {
                 <Link href="/patients?add=1" className="rounded-xl border border-ivory/15 bg-white/[0.06] px-4 py-3 text-sm font-medium backdrop-blur transition-colors hover:bg-white/[0.12] dark:border-white/15 dark:hover:bg-white/10">
                   Add a new patient
                 </Link>
-                <Link href="/patients" className="rounded-xl border border-ivory/15 bg-white/[0.06] px-4 py-3 text-sm font-medium backdrop-blur transition-colors hover:bg-white/[0.12] dark:border-white/15 dark:hover:bg-white/10">
+                <button onClick={openBooking} className="rounded-xl border border-ivory/15 bg-white/[0.06] px-4 py-3 text-left text-sm font-medium backdrop-blur transition-colors hover:bg-white/[0.12] dark:border-white/15 dark:hover:bg-white/10">
                   Book an appointment
-                </Link>
+                </button>
                 <Link href="/patients?status=follow-up" className="rounded-xl border border-ivory/15 bg-white/[0.06] px-4 py-3 text-sm font-medium backdrop-blur transition-colors hover:bg-white/[0.12] dark:border-white/15 dark:hover:bg-white/10">
                   View pending follow-ups
                 </Link>
@@ -399,6 +467,15 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      <BookAppointmentModal
+        open={bookOpen}
+        patients={patients}
+        saving={bookSaving}
+        error={bookError}
+        onClose={() => setBookOpen(false)}
+        onSave={saveBooking}
+      />
     </AppShell>
   );
 }
