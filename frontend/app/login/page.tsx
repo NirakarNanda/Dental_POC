@@ -5,26 +5,68 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { fraunces } from "@/lib/fonts";
 import { gsap, useGSAP } from "@/lib/gsap";
-import Logo from "@/components/Logo";
 import AmbientBackground from "@/components/AmbientBackground";
 import ThemeToggle from "@/components/theme/ThemeToggle";
-import PasswordField, { fieldInputCls, fieldLabelCls } from "@/components/PasswordField";
-import ToothBuddy from "@/components/ToothBuddy";
 
 const DEMO_EMAIL = "doctor@pearlsmile.dental";
 const DEMO_PASSWORD = "demo1234";
+
+const SKETCHFAB_EMBED =
+  "https://sketchfab.com/models/af77b63454c248df8709741aac7cf393/embed?autostart=1&ui_theme=dark";
+
+const inputCls =
+  "w-full rounded-2xl border border-white/50 bg-white/70 px-5 py-4 text-[16px] text-ink shadow-soft backdrop-blur-md placeholder:text-ink/35 outline-none transition-all focus:border-mint-500/60 focus:bg-white/95 focus:ring-4 focus:ring-mint-500/10 dark:border-white/10 dark:bg-white/[0.07] dark:text-[#edf7f5] dark:placeholder:text-white/30 dark:focus:border-mint-300/40 dark:focus:bg-white/[0.1] dark:focus:ring-mint-300/10";
+
+const eyeIcon = (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const eyeOffIcon = (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+    <line x1="1" y1="1" x2="23" y2="23" />
+  </svg>
+);
 
 export default function LoginPage() {
   const { login } = useAuth();
   const rootRef = useRef<HTMLDivElement>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [modelLoaded, setModelLoaded] = useState(false);
 
   useGSAP(
     () => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      if (reduced) {
         gsap.set("[data-reveal]", { opacity: 1, y: 0 });
         return;
       }
@@ -35,21 +77,20 @@ export default function LoginPage() {
           opacity: 1,
           y: 0,
           duration: 0.9,
-          stagger: 0.1,
+          stagger: 0.09,
           ease: "power3.out",
           delay: 0.15,
         },
       );
-      // Gentle perpetual float for the equipment showcase cards.
-      gsap.utils.toArray<HTMLElement>("[data-float]").forEach((el, i) => {
+      // Slow ambient drift for the glow orbs.
+      gsap.utils.toArray<HTMLElement>("[data-drift]").forEach((el, i) => {
         gsap.to(el, {
-          y: i % 2 === 0 ? -14 : 12,
-          rotation: i % 2 === 0 ? 1.1 : -1.1,
-          duration: 3.6 + i * 0.8,
+          x: i % 2 === 0 ? 46 : -38,
+          y: i % 2 === 0 ? -30 : 42,
+          duration: 11 + i * 3.5,
           yoyo: true,
           repeat: -1,
           ease: "sine.inOut",
-          delay: i * 0.5,
         });
       });
     },
@@ -79,9 +120,25 @@ export default function LoginPage() {
   return (
     <div
       ref={rootRef}
-      className="relative flex min-h-svh items-center justify-center overflow-hidden bg-ivory px-5 py-12 text-ink dark:bg-abyss-950 dark:text-[#edf7f5]"
+      className="relative flex min-h-svh items-center justify-center overflow-hidden bg-ivory px-5 py-14 text-ink dark:bg-abyss-950 dark:text-[#edf7f5]"
     >
       <AmbientBackground />
+
+      {/* Reference-style glow orbs, tinted to our theme */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div
+          data-drift
+          className="absolute -left-24 top-[8%] h-[26rem] w-[26rem] rounded-full bg-mint-300/50 blur-3xl dark:bg-mint-400/15"
+        />
+        <div
+          data-drift
+          className="absolute -right-28 top-[30%] h-[30rem] w-[30rem] rounded-full bg-amber-200/70 blur-3xl dark:bg-amber-200/10"
+        />
+        <div
+          data-drift
+          className="absolute -bottom-32 left-[22%] h-[24rem] w-[24rem] rounded-full bg-rose-200/60 blur-3xl dark:bg-rose-300/10"
+        />
+      </div>
 
       <div
         className="absolute right-5 top-5 z-20 flex items-center gap-3 sm:right-8 sm:top-8"
@@ -110,146 +167,132 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
 
-      {/* Equipment showcase — fills the wide-screen space flanking the card */}
-      <div
-        className="pointer-events-none absolute inset-y-0 left-0 z-0 hidden w-[34%] items-center justify-center xl:flex"
-        aria-hidden="true"
-      >
-        <div className="relative w-full max-w-[400px] -translate-y-6 pl-[6%]">
-          <div
-            className="absolute -inset-10 rounded-full bg-mint-400/15 blur-3xl dark:bg-mint-300/10"
-            data-reveal
-          />
-          <div data-float className="relative -rotate-3">
-            <div className="overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_80px_-20px_rgba(13,60,60,0.45)] ring-1 ring-ink/10 dark:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] dark:ring-white/15">
-              <img
-                src="/equipment-chair.png"
-                alt=""
-                className="h-auto w-full"
-                draggable={false}
+      <div className="relative z-10 w-full max-w-md">
+        {/* 3D hero */}
+        <div data-reveal>
+          <div className="relative">
+            <div className="absolute -inset-6 rounded-[2.5rem] bg-mint-300/30 blur-2xl dark:bg-mint-400/15" />
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-abyss-900 shadow-[0_30px_80px_-24px_rgba(13,60,60,0.5)] ring-1 ring-ink/10 dark:shadow-[0_30px_80px_-24px_rgba(0,0,0,0.85)] dark:ring-white/15">
+              {!modelLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="animate-pulse text-sm tracking-wide text-white/40">
+                    Loading 3D…
+                  </p>
+                </div>
+              )}
+              <iframe
+                title="Rose Tinted — flowers in test tubes, 3D model by SiobhanClair"
+                src={SKETCHFAB_EMBED}
+                allow="autoplay; fullscreen; xr-spatial-tracking"
+                allowFullScreen
+                onLoad={() => setModelLoaded(true)}
+                className="relative h-full w-full border-0"
+                loading="lazy"
               />
             </div>
-            <p
-              className="mt-4 text-center text-[11px] font-semibold uppercase tracking-[0.26em] text-ink/40 dark:text-white/35"
-              data-reveal
-            >
-              Operatory chair
-            </p>
           </div>
+          <p className="mt-3 text-center text-[11px] tracking-wide text-ink/40 dark:text-white/35">
+            “Rose Tinted” by{" "}
+            <a
+              href="https://sketchfab.com/SiobhanClair"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="underline underline-offset-2 hover:text-ink dark:hover:text-white"
+            >
+              SiobhanClair
+            </a>{" "}
+            on{" "}
+            <a
+              href="https://sketchfab.com/3d-models/rose-tinted-af77b63454c248df8709741aac7cf393"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="underline underline-offset-2 hover:text-ink dark:hover:text-white"
+            >
+              Sketchfab
+            </a>
+          </p>
         </div>
-      </div>
 
-      <div
-        className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[34%] items-center justify-center xl:flex"
-        aria-hidden="true"
-      >
-        <div className="relative w-full max-w-[360px] translate-y-10 pr-[6%]">
-          <div
-            className="absolute -inset-10 rounded-full bg-mint-400/15 blur-3xl dark:bg-mint-300/10"
-            data-reveal
+        <h1
+          data-reveal
+          className={`${fraunces.className} mt-8 text-center text-[2.6rem] font-light leading-none tracking-tight`}
+        >
+          Log In
+        </h1>
+
+        <form onSubmit={submit} className="mt-7 space-y-4" data-reveal>
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            aria-label="Email"
+            className={inputCls}
           />
-          <div data-float className="relative rotate-2">
-            <div className="overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_80px_-20px_rgba(13,60,60,0.45)] ring-1 ring-ink/10 dark:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] dark:ring-white/15">
-              <img
-                src="/equipment-tools.png"
-                alt=""
-                className="h-auto w-full"
-                draggable={false}
-              />
-            </div>
-            <p
-              className="mt-4 text-center text-[11px] font-semibold uppercase tracking-[0.26em] text-ink/40 dark:text-white/35"
-              data-reveal
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              aria-label="Password"
+              className={`${inputCls} pr-13`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-ink/40 transition-colors hover:bg-ink/5 hover:text-ink dark:text-white/40 dark:hover:bg-white/10 dark:hover:text-white"
             >
-              Precision instruments
-            </p>
+              {showPassword ? eyeOffIcon : eyeIcon}
+            </button>
           </div>
-        </div>
-      </div>
 
-      <div className="relative w-full max-w-md">
-        <div className="relative z-10 -mb-5 flex justify-center" data-reveal>
-          <ToothBuddy />
-        </div>
+          {error && (
+            <div
+              className="rounded-2xl border border-red-900/15 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-400/20 dark:bg-red-950/40 dark:text-red-200"
+              role="alert"
+            >
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-full bg-ink py-4 text-[16px] font-semibold tracking-wide text-ivory shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift disabled:translate-y-0 disabled:opacity-60 dark:bg-mint-300 dark:text-abyss-950"
+          >
+            {busy ? "Logging in…" : "Login"}
+          </button>
+        </form>
+
         <div
           data-reveal
-          className="glass-deep rounded-[1.75rem] p-8 pt-10 sm:p-10 sm:pt-12"
+          className="mt-6 rounded-2xl border border-white/50 bg-white/50 p-4 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]"
         >
-          <div className="flex flex-col items-center text-center">
-            <Logo size={52} />
-            <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.28em] text-ink/45 dark:text-white/40">
-              Staff Portal
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink/45 dark:text-white/40">
+            Demo credentials
+          </p>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="font-mono text-[12.5px] leading-relaxed text-ink/70 dark:text-white/60">
+              {DEMO_EMAIL}
+              <br />
+              {DEMO_PASSWORD}
             </p>
-            <h1
-              className={`${fraunces.className} mt-2 text-[2rem] font-light leading-tight tracking-tight`}
-            >
-              Welcome back, Doctor
-            </h1>
-            <p className="mt-2 text-sm leading-relaxed text-ink/55 dark:text-white/50">
-              Sign in to open your clinic dashboard.
-            </p>
-          </div>
-
-          <form onSubmit={submit} className="mt-8 space-y-5">
-            <div>
-              <label htmlFor="email" className={fieldLabelCls}>
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="doctor@pearlsmile.dental"
-                className={fieldInputCls}
-              />
-            </div>
-            <PasswordField
-              id="password"
-              label="Password"
-              value={password}
-              onChange={setPassword}
-              autoComplete="current-password"
-            />
-
-            {error && (
-              <div
-                className="rounded-xl border border-red-900/15 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-400/20 dark:bg-red-950/40 dark:text-red-200"
-                role="alert"
-              >
-                {error}
-              </div>
-            )}
-
             <button
-              type="submit"
-              disabled={busy}
-              className="w-full rounded-full bg-ink py-3.5 text-[15px] font-semibold tracking-wide text-ivory shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift disabled:translate-y-0 disabled:opacity-60 dark:bg-mint-300 dark:text-abyss-950"
+              type="button"
+              onClick={fillDemo}
+              className="shrink-0 text-[13px] font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink dark:text-white/80 dark:decoration-white/30 dark:hover:decoration-white"
             >
-              {busy ? "Signing in…" : "Sign in"}
+              Fill
             </button>
-          </form>
-
-          <div className="glass-pill mt-7 rounded-2xl bg-white/40 p-4 dark:bg-white/[0.05]">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink/45 dark:text-white/40">
-              Demo credentials
-            </p>
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <p className="font-mono text-[12.5px] leading-relaxed text-ink/70 dark:text-white/60">
-                {DEMO_EMAIL}
-                <br />
-                {DEMO_PASSWORD}
-              </p>
-              <button
-                type="button"
-                onClick={fillDemo}
-                className="shrink-0 text-[13px] font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink dark:text-white/80 dark:decoration-white/30 dark:hover:decoration-white"
-              >
-                Fill
-              </button>
-            </div>
           </div>
         </div>
 
