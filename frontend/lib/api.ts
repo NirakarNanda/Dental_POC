@@ -71,6 +71,11 @@ export const api = {
     }),
   me: () => request<{ ok: boolean; user: User }>("/api/auth/me"),
   logout: () => request<{ ok: boolean }>("/api/auth/logout", { method: "POST" }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<{ ok: boolean }>("/api/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
 
   listPatients: (search = "", status = "") => {
     const q = new URLSearchParams();

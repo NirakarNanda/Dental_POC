@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { Router } from "express";
 import { SESSION_COOKIE_NAME } from "../config";
 import { getDb } from "../db";
+import { requireAuth } from "../middleware/auth";
 
 export const authRouter = Router();
 
@@ -43,6 +44,39 @@ authRouter.get("/me", (req, res) => {
     return;
   }
   res.status(401).json({ ok: false, message: "Not authenticated" });
+});
+
+// POST /api/auth/change-password {currentPassword, newPassword} -> 200 {ok:true}
+// Requires a valid session. Verifies the current password before replacing it.
+authRouter.post("/change-password", requireAuth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body ?? {};
+  if (typeof currentPassword !== "string" || typeof newPassword !== "string") {
+    res.status(400).json({ ok: false, message: "currentPassword and newPassword are required" });
+    return;
+  }
+  if (newPassword.length < 8) {
+    res.status(400).json({ ok: false, message: "New password must be at least 8 characters" });
+    return;
+  }
+  if (newPassword === currentPassword) {
+    res.status(400).json({ ok: false, message: "New password must be different from the current one" });
+    return;
+  }
+  const email = (req.session as unknown as { user?: { email?: string } }).user?.email;
+  const db = getDb();
+  const doctor = email ? await db.getDoctorByEmail(email) : null;
+  if (!doctor) {
+    res.status(401).json({ ok: false, message: "Not authenticated" });
+    return;
+  }
+  const match = await bcrypt.compare(currentPassword, doctor.passwordHash);
+  if (!match) {
+    res.status(401).json({ ok: false, message: "Current password is incorrect" });
+    return;
+  }
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await db.upsertDoctor({ ...doctor, passwordHash });
+  res.json({ ok: true });
 });
 
 // POST /api/auth/logout -> 200 {ok:true} (destroys session)

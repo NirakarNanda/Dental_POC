@@ -407,15 +407,16 @@ export default function LandingPage() {
         <PotScene />
       </div>
 
-      {/* ── side note: The Standard — at Doctor Login button height, right
-          side, just left of the plant (xl only). Positioned against the
-          full-viewport section (same context as the plant): the right offset
-          clears the plant's max width (52vh × 1.016 aspect × 1.03 zoom) at
-          any window size, and the bottom offset centers the note on the
-          button (button center sits at 50vh − ~186px from the bottom). */}
+      {/* ── side note: The Standard — far right, in the open space between
+          the stat stack (top-anchored, ends ~256px) and the orchid (52vh
+          tall, bottom-anchored). The bottom offset parks it just above the
+          plant's max height at any window size; PIL alpha checks confirm
+          the blooms never reach this band. (Beside-the-button placement was
+          tried and reverted: at 1440px the centered login pill extends into
+          that zone, so the two overlapped.) */}
       <div
         data-fade
-        className="absolute bottom-[calc(50vh-230px)] right-[calc(56vh+1.5rem)] z-10 hidden w-56 text-right xl:block"
+        className="absolute bottom-[calc(52vh+1.25rem)] right-6 z-10 hidden w-56 text-right lg:right-12 xl:min-[760px]:block"
       >
         <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#0e2a28]/45 dark:text-white/40">
           The Standard

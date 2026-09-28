@@ -46,10 +46,32 @@
   to { background-position: 400px 0; }
 }
 
+/* Cozy tooth buddy (login page) */
+@keyframes tooth-bob {
+  0%, 100% { transform: translateY(0) rotate(-2.5deg); }
+  50% { transform: translateY(-10px) rotate(2.5deg); }
+}
+@keyframes tooth-blink {
+  0%, 91%, 100% { transform: scaleY(1); }
+  94.5% { transform: scaleY(0.06); }
+}
+@keyframes sparkle-rise {
+  0% { opacity: 0; transform: translateY(8px) scale(0.5) rotate(0deg); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-26px) scale(1.05) rotate(40deg); }
+}
+.tooth-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 /* Respect reduced motion: still, readable UI */
 @media (prefers-reduced-motion: reduce) {
   .animate-shimmer {
     animation: none;
+  }
+  .tooth-buddy, .tooth-buddy * {
+    animation: none !important;
   }
 }
 

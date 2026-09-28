@@ -8,6 +8,8 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import Logo from "@/components/Logo";
 import AmbientBackground from "@/components/AmbientBackground";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import PasswordField, { fieldInputCls, fieldLabelCls } from "@/components/PasswordField";
+import ToothBuddy from "@/components/ToothBuddy";
 
 const DEMO_EMAIL = "doctor@pearlsmile.dental";
 const DEMO_PASSWORD = "demo1234";
@@ -62,11 +64,6 @@ export default function LoginPage() {
     }
   };
 
-  const inputCls =
-    "w-full rounded-xl border border-white/60 bg-white/55 px-4 py-3 text-[15px] text-ink backdrop-blur-md placeholder:text-ink/35 outline-none transition-all focus:border-ink/40 focus:bg-white/85 focus:ring-4 focus:ring-ink/5 dark:border-white/10 dark:bg-white/[0.06] dark:text-[#edf7f5] dark:placeholder:text-white/30 dark:focus:border-white/40 dark:focus:bg-white/[0.09] dark:focus:ring-white/5";
-  const labelCls =
-    "mb-2 block text-[10px] font-semibold uppercase tracking-[0.22em] text-ink/50 dark:text-white/45";
-
   return (
     <div
       ref={rootRef}
@@ -79,9 +76,12 @@ export default function LoginPage() {
       </div>
 
       <div className="relative w-full max-w-md">
+        <div className="relative z-10 -mb-5 flex justify-center" data-reveal>
+          <ToothBuddy />
+        </div>
         <div
           data-reveal
-          className="glass-deep rounded-[1.75rem] p-8 sm:p-10"
+          className="glass-deep rounded-[1.75rem] p-8 pt-10 sm:p-10 sm:pt-12"
         >
           <div className="flex flex-col items-center text-center">
             <Logo size={52} />
@@ -100,7 +100,7 @@ export default function LoginPage() {
 
           <form onSubmit={submit} className="mt-8 space-y-5">
             <div>
-              <label htmlFor="email" className={labelCls}>
+              <label htmlFor="email" className={fieldLabelCls}>
                 Email address
               </label>
               <input
@@ -111,24 +111,16 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="doctor@pearlsmile.dental"
-                className={inputCls}
+                className={fieldInputCls}
               />
             </div>
-            <div>
-              <label htmlFor="password" className={labelCls}>
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className={inputCls}
-              />
-            </div>
+            <PasswordField
+              id="password"
+              label="Password"
+              value={password}
+              onChange={setPassword}
+              autoComplete="current-password"
+            />
 
             {error && (
               <div
