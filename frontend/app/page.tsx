@@ -369,7 +369,7 @@ export default function LandingPage() {
           </div>
           <div
             data-fade
-            className="absolute right-0 top-1/2 hidden w-56 -translate-y-1/2 text-right xl:block"
+            className="absolute right-0 top-[37%] hidden w-56 -translate-y-1/2 text-right xl:block"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#0e2a28]/45 dark:text-white/40">
               The Standard
