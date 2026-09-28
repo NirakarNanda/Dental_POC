@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
+import { fraunces } from "@/lib/fonts";
+import { gsap, useGSAP } from "@/lib/gsap";
 import Logo from "@/components/Logo";
-import SparkleField from "@/components/ui/SparkleField";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 
 const DEMO_EMAIL = "doctor@pearlsmile.dental";
@@ -12,10 +13,33 @@ const DEMO_PASSWORD = "demo1234";
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const rootRef = useRef<HTMLDivElement>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useGSAP(
+    () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        gsap.set("[data-reveal]", { opacity: 1, y: 0 });
+        return;
+      }
+      gsap.fromTo(
+        "[data-reveal]",
+        { opacity: 0, y: 18 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          stagger: 0.1,
+          ease: "power3.out",
+          delay: 0.15,
+        },
+      );
+    },
+    { scope: rootRef },
+  );
 
   const fillDemo = () => {
     setEmail(DEMO_EMAIL);
@@ -38,34 +62,49 @@ export default function LoginPage() {
   };
 
   const inputCls =
-    "w-full rounded-2xl border border-mint-100 bg-white px-4 py-3 text-[15px] text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-mint-400 focus:ring-4 focus:ring-mint-100 dark:border-abyss-700 dark:bg-abyss-950 dark:text-mint-50 dark:placeholder:text-mint-100/40 dark:focus:border-mint-500 dark:focus:ring-mint-900/50";
+    "w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 outline-none transition-all focus:border-ink/40 focus:ring-4 focus:ring-ink/5 dark:border-white/15 dark:bg-white/[0.05] dark:text-[#edf7f5] dark:placeholder:text-white/30 dark:focus:border-white/40 dark:focus:ring-white/5";
+  const labelCls =
+    "mb-2 block text-[10px] font-semibold uppercase tracking-[0.22em] text-ink/50 dark:text-white/45";
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-mint-50 via-aqua-50 to-mint-100 px-5 py-12 dark:from-abyss-950 dark:via-abyss-900 dark:to-abyss-950">
-      {/* decorative blobs */}
-      <div className="pointer-events-none absolute -left-24 top-10 h-96 w-96 animate-blob-drift rounded-full bg-mint-200/50 blur-3xl dark:bg-mint-900/30" aria-hidden="true" />
-      <div className="pointer-events-none absolute -right-20 bottom-10 h-80 w-80 animate-blob-drift-2 rounded-full bg-cyan-200/40 blur-3xl dark:bg-cyan-900/25" aria-hidden="true" />
-      <SparkleField seed={23} />
+    <div
+      ref={rootRef}
+      className="relative flex min-h-svh items-center justify-center overflow-hidden bg-ivory px-5 py-12 text-ink dark:bg-abyss-950 dark:text-[#edf7f5]"
+    >
+      {/* quiet editorial backdrop */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 left-[12%] h-72 w-72 rounded-full bg-[#dfe4cd]/60 blur-3xl dark:bg-mint-900/25" />
+        <div className="absolute -bottom-28 right-[8%] h-80 w-80 rounded-full bg-[#c2d8cf]/50 blur-3xl dark:bg-abyss-800/60" />
+        <div className="hero-grain absolute inset-0 opacity-[0.05] dark:opacity-[0.07]" />
+      </div>
 
-      <div className="absolute right-5 top-5 sm:right-8 sm:top-8">
+      <div className="absolute right-5 top-5 sm:right-8 sm:top-8" data-reveal>
         <ThemeToggle />
       </div>
 
-      <div className="relative w-full max-w-md animate-fade-up">
-        <div className="rounded-[2rem] bg-white/90 p-8 shadow-lift backdrop-blur-xl dark:border dark:border-abyss-700/60 dark:bg-abyss-900/90 sm:p-10">
+      <div className="relative w-full max-w-md">
+        <div
+          data-reveal
+          className="rounded-[1.75rem] border border-ink/10 bg-white/90 p-8 shadow-soft backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04] sm:p-10"
+        >
           <div className="flex flex-col items-center text-center">
-            <Logo size={56} />
-            <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-mint-950 dark:text-white">
-              PearlSmile Dental Studio
+            <Logo size={52} />
+            <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.28em] text-ink/45 dark:text-white/40">
+              Staff Portal
+            </p>
+            <h1
+              className={`${fraunces.className} mt-2 text-[2rem] font-light leading-tight tracking-tight`}
+            >
+              Welcome back, Doctor
             </h1>
-            <p className="mt-1.5 text-sm text-slate-500 dark:text-mint-100/60">
-              Staff portal — sign in to manage the clinic
+            <p className="mt-2 text-sm leading-relaxed text-ink/55 dark:text-white/50">
+              Sign in to open your clinic dashboard.
             </p>
           </div>
 
-          <form onSubmit={submit} className="mt-8 space-y-4">
+          <form onSubmit={submit} className="mt-8 space-y-5">
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-mint-100/80">
+              <label htmlFor="email" className={labelCls}>
                 Email address
               </label>
               <input
@@ -80,7 +119,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-mint-100/80">
+              <label htmlFor="password" className={labelCls}>
                 Password
               </label>
               <input
@@ -96,7 +135,10 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="animate-fade-up rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/60 dark:bg-red-950/50 dark:text-red-300" role="alert">
+              <div
+                className="rounded-xl border border-red-900/15 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-400/20 dark:bg-red-950/40 dark:text-red-200"
+                role="alert"
+              >
                 {error}
               </div>
             )}
@@ -104,26 +146,26 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-2xl bg-mint-600 py-3.5 text-base font-bold text-white shadow-soft transition-all hover:-translate-y-0.5 hover:bg-mint-700 hover:shadow-lift disabled:translate-y-0 disabled:opacity-60"
+              className="w-full rounded-full bg-ink py-3.5 text-[15px] font-semibold tracking-wide text-ivory shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift disabled:translate-y-0 disabled:opacity-60 dark:bg-mint-300 dark:text-abyss-950"
             >
               {busy ? "Signing in…" : "Sign in"}
             </button>
           </form>
 
-          <div className="mt-6 rounded-2xl border border-dashed border-mint-300 bg-mint-50/60 p-4 dark:border-abyss-700 dark:bg-abyss-950/60">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-mint-700 dark:text-mint-300">Demo credentials</p>
-                <p className="mt-1.5 font-mono text-[13px] text-slate-700 dark:text-mint-100/80">
-                  {DEMO_EMAIL}
-                  <br />
-                  {DEMO_PASSWORD}
-                </p>
-              </div>
+          <div className="mt-7 rounded-2xl border border-dashed border-ink/15 p-4 dark:border-white/15">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink/45 dark:text-white/40">
+              Demo credentials
+            </p>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <p className="font-mono text-[12.5px] leading-relaxed text-ink/70 dark:text-white/60">
+                {DEMO_EMAIL}
+                <br />
+                {DEMO_PASSWORD}
+              </p>
               <button
                 type="button"
                 onClick={fillDemo}
-                className="shrink-0 rounded-full border border-mint-300 bg-white px-4 py-2 text-xs font-bold text-mint-800 transition-all hover:bg-mint-600 hover:text-white dark:border-abyss-700 dark:bg-abyss-800 dark:text-mint-200 dark:hover:bg-mint-600 dark:hover:text-white"
+                className="shrink-0 text-[13px] font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink dark:text-white/80 dark:decoration-white/30 dark:hover:decoration-white"
               >
                 Fill
               </button>
@@ -131,9 +173,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-sm text-slate-500 dark:text-mint-100/60">
-          <Link href="/" className="font-semibold text-mint-700 hover:text-mint-900 dark:text-mint-300 dark:hover:text-mint-200">
-            ← Back to website
+        <p className="mt-6 text-center text-sm" data-reveal>
+          <Link
+            href="/"
+            className="font-medium text-ink/55 underline-offset-4 transition-colors hover:text-ink hover:underline dark:text-white/50 dark:hover:text-white"
+          >
+            ← Back to PearlSmile
           </Link>
         </p>
       </div>

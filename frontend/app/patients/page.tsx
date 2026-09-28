@@ -1,11 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import PatientModal from "@/components/PatientModal";
 import StatusBadge from "@/components/StatusBadge";
 import { useToast } from "@/components/Toast";
+import { fraunces } from "@/lib/fonts";
+import { gsap, useGSAP } from "@/lib/gsap";
 import { api, formatDate, type Patient, type PatientStatus } from "@/lib/api";
 import { useRequireAuth } from "@/lib/auth";
 
@@ -32,31 +34,33 @@ function ConfirmDialog({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[95] flex items-center justify-center bg-mint-950/40 p-4 backdrop-blur-sm dark:bg-black/60"
+      className="fixed inset-0 z-[95] flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm dark:bg-black/60"
       onClick={onCancel}
       role="alertdialog"
       aria-label="Confirm delete"
     >
       <div
-        className="animate-fade-up w-full max-w-sm rounded-3xl bg-white p-6 shadow-lift dark:bg-abyss-900"
+        className="w-full max-w-sm rounded-3xl border border-ink/10 bg-white p-6 shadow-lift dark:border-white/10 dark:bg-abyss-900 sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-extrabold text-mint-950 dark:text-white">Delete patient?</h3>
-        <p className="mt-2 text-sm text-slate-600 dark:text-mint-100/70">
-          <span className="font-semibold text-mint-950 dark:text-white">{name}</span> will be
+        <h3 className={`${fraunces.className} text-[1.4rem] font-light tracking-tight`}>
+          Delete patient?
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-ink/60 dark:text-white/55">
+          <span className="font-semibold text-ink dark:text-white">{name}</span> will be
           removed from the clinic records. This cannot be undone.
         </p>
-        <div className="mt-5 flex gap-3">
+        <div className="mt-6 flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 rounded-2xl border border-mint-200 py-2.5 text-sm font-bold text-mint-800 transition-colors hover:bg-mint-50 dark:border-abyss-700 dark:text-mint-200 dark:hover:bg-abyss-800"
+            className="flex-1 rounded-full border border-ink/15 py-2.5 text-sm font-semibold text-ink/70 transition-colors hover:border-ink/40 hover:text-ink dark:border-white/15 dark:text-white/60 dark:hover:border-white/40 dark:hover:text-white"
           >
             Keep
           </button>
           <button
             onClick={onConfirm}
             disabled={busy}
-            className="flex-1 rounded-2xl bg-red-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+            className="flex-1 rounded-full bg-red-800 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-900 disabled:opacity-60 dark:bg-red-700 dark:hover:bg-red-600"
           >
             {busy ? "Deleting…" : "Delete"}
           </button>
@@ -70,6 +74,7 @@ function PatientsContent() {
   useRequireAuth();
   const toast = useToast();
   const searchParams = useSearchParams();
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,6 +108,29 @@ function PatientsContent() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Calm staggered entrance once data is in
+  useGSAP(
+    () => {
+      if (loading) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        gsap.set("[data-reveal]", { opacity: 1, y: 0 });
+        return;
+      }
+      gsap.fromTo(
+        "[data-reveal]",
+        { opacity: 0, y: 16 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.06,
+          ease: "power3.out",
+        },
+      );
+    },
+    { scope: rootRef, dependencies: [loading] },
+  );
 
   // Deep links: ?add=1 opens the create modal, ?status=follow-up pre-filters
   useEffect(() => {
@@ -208,239 +236,246 @@ function PatientsContent() {
 
   return (
     <AppShell>
-      {/* header */}
-      <div className="animate-fade-up flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-mint-950 dark:text-white">Patients</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-mint-100/60">
-            {loading ? "Loading records…" : `${visible.length} of ${patients.length} patients`}
-          </p>
-        </div>
-        <button
-          onClick={openAdd}
-          className="rounded-full bg-mint-600 px-6 py-3 text-sm font-bold text-white shadow-soft transition-all hover:-translate-y-0.5 hover:bg-mint-700 hover:shadow-lift"
-        >
-          + Add patient
-        </button>
-      </div>
-
-      {error && (
-        <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700 dark:border-red-900/60 dark:bg-red-950/50 dark:text-red-300" role="alert">
-          <span>{error}</span>
-          <button onClick={load} className="shrink-0 font-bold underline">Retry</button>
-        </div>
-      )}
-
-      {/* toolbar */}
-      <div className="animate-fade-up mt-6 rounded-3xl bg-white p-4 shadow-soft dark:bg-abyss-900 sm:p-5" style={{ animationDelay: "0.08s" }}>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative flex-1">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-mint-100/40">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4.3-4.3" />
-            </svg>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name, phone or treatment…"
-              className="w-full rounded-2xl border border-mint-100 bg-mint-50/40 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-mint-400 focus:bg-white focus:ring-4 focus:ring-mint-100 dark:border-abyss-700 dark:bg-abyss-950/60 dark:text-mint-50 dark:placeholder:text-mint-100/40 dark:focus:border-mint-500 dark:focus:bg-abyss-950 dark:focus:ring-mint-900/50"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {FILTERS.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={`rounded-full px-4 py-2 text-xs font-bold capitalize transition-all ${
-                  filter === f.key
-                    ? "bg-mint-600 text-white shadow-soft"
-                    : "bg-mint-50 text-slate-600 hover:bg-mint-100 hover:text-mint-800 dark:bg-abyss-800 dark:text-mint-100/70 dark:hover:bg-abyss-700 dark:hover:text-mint-200"
-                }`}
-              >
-                {f.label}
-                <span className={`ml-1.5 rounded-full px-1.5 ${filter === f.key ? "bg-white/25" : "bg-white text-slate-500 dark:bg-abyss-950 dark:text-mint-100/60"}`}>
-                  {counts[f.key]}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* desktop table */}
-      <div className="animate-fade-up mt-6 hidden overflow-hidden rounded-3xl bg-white shadow-soft dark:bg-abyss-900 md:block" style={{ animationDelay: "0.12s" }}>
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-mint-100 bg-mint-50/50 text-xs uppercase tracking-wide text-slate-500 dark:border-abyss-700 dark:bg-abyss-950/50 dark:text-mint-100/60">
-              <th className="px-6 py-4">
-                <button onClick={() => toggleSort("name")} className="font-bold hover:text-mint-800 dark:hover:text-mint-300">
-                  Patient{sortArrow("name")}
-                </button>
-              </th>
-              <th className="px-6 py-4">Contact</th>
-              <th className="px-6 py-4">Treatment</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">
-                <button onClick={() => toggleSort("nextVisit")} className="font-bold hover:text-mint-800 dark:hover:text-mint-300">
-                  Next visit{sortArrow("nextVisit")}
-                </button>
-              </th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-mint-50 dark:border-abyss-800">
-                  <td className="px-6 py-4"><div className="skeleton h-4 w-36 rounded" /></td>
-                  <td className="px-6 py-4"><div className="skeleton h-4 w-28 rounded" /></td>
-                  <td className="px-6 py-4"><div className="skeleton h-4 w-32 rounded" /></td>
-                  <td className="px-6 py-4"><div className="skeleton h-6 w-20 rounded-full" /></td>
-                  <td className="px-6 py-4"><div className="skeleton h-4 w-24 rounded" /></td>
-                  <td className="px-6 py-4"><div className="skeleton ml-auto h-8 w-24 rounded-xl" /></td>
-                </tr>
-              ))
-            ) : visible.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-16 text-center">
-                  <p className="text-base font-bold text-mint-950 dark:text-white">No patients found</p>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-mint-100/60">
-                    {patients.length === 0
-                      ? "Your clinic records are empty — add your first patient to get started."
-                      : "Try a different search or filter."}
-                  </p>
-                  {patients.length === 0 && (
-                    <button
-                      onClick={openAdd}
-                      className="mt-4 rounded-full bg-mint-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-mint-700"
-                    >
-                      + Add first patient
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ) : (
-              visible.map((p) => (
-                <tr key={p.id} className="border-b border-mint-50 transition-colors last:border-0 hover:bg-mint-50/40 dark:border-abyss-800 dark:hover:bg-abyss-800/60">
-                  <td className="px-6 py-4">
-                    <p className="font-bold text-mint-950 dark:text-white">{p.name}</p>
-                    <p className="text-xs text-slate-500 dark:text-mint-100/60">Age {p.age}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-slate-700 dark:text-mint-100/80">{p.phone}</p>
-                    {p.email && <p className="text-xs text-slate-500 dark:text-mint-100/60">{p.email}</p>}
-                  </td>
-                  <td className="px-6 py-4 text-slate-700 dark:text-mint-100/80">{p.treatment}</td>
-                  <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
-                  <td className="px-6 py-4 font-medium text-slate-700 dark:text-mint-100/80">{formatDate(p.nextVisit)}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => openEdit(p)}
-                        className="rounded-xl border border-mint-200 px-3.5 py-1.5 text-xs font-bold text-mint-800 transition-colors hover:bg-mint-600 hover:text-white dark:border-abyss-700 dark:text-mint-200 dark:hover:bg-mint-600 dark:hover:text-white"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => setDeleting(p)}
-                        className="rounded-xl border border-red-200 px-3.5 py-1.5 text-xs font-bold text-red-600 transition-colors hover:bg-red-600 hover:text-white dark:border-red-900/60 dark:text-red-300"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* mobile cards */}
-      <div className="mt-6 space-y-4 md:hidden">
-        {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-3xl bg-white p-5 shadow-soft dark:bg-abyss-900">
-              <div className="skeleton h-5 w-40 rounded" />
-              <div className="skeleton mt-3 h-4 w-56 rounded" />
-              <div className="skeleton mt-2 h-4 w-32 rounded" />
-            </div>
-          ))
-        ) : visible.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-mint-200 bg-white p-10 text-center shadow-soft dark:border-abyss-700 dark:bg-abyss-900">
-            <p className="text-base font-bold text-mint-950 dark:text-white">No patients found</p>
-            <p className="mt-1 text-sm text-slate-500 dark:text-mint-100/60">
-              {patients.length === 0
-                ? "Add your first patient to get started."
-                : "Try a different search or filter."}
+      <div ref={rootRef}>
+        {/* header */}
+        <div data-reveal className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-ink/45 dark:text-white/40">
+              Clinic records
             </p>
-            {patients.length === 0 && (
-              <button
-                onClick={openAdd}
-                className="mt-4 rounded-full bg-mint-600 px-6 py-2.5 text-sm font-bold text-white"
-              >
-                + Add first patient
-              </button>
-            )}
+            <h1 className={`${fraunces.className} mt-2 text-[2.5rem] font-light leading-tight tracking-tight`}>
+              Patients
+            </h1>
+            <p className="mt-1.5 text-sm text-ink/55 dark:text-white/50">
+              {loading ? "Loading records…" : `${visible.length} of ${patients.length} patients`}
+            </p>
           </div>
-        ) : (
-          visible.map((p, i) => (
-            <div
-              key={p.id}
-              className="animate-fade-up rounded-3xl bg-white p-5 shadow-soft dark:bg-abyss-900"
-              style={{ animationDelay: `${Math.min(i, 6) * 0.05}s` }}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-bold text-mint-950 dark:text-white">{p.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-mint-100/60">Age {p.age} · {p.phone}</p>
-                </div>
-                <StatusBadge status={p.status} />
-              </div>
-              <div className="mt-3 flex items-center justify-between border-t border-mint-50 pt-3 text-sm dark:border-abyss-800">
-                <div>
-                  <p className="text-slate-700 dark:text-mint-100/80">{p.treatment}</p>
-                  <p className="mt-0.5 text-xs font-semibold text-mint-700 dark:text-mint-300">
-                    Next visit: {formatDate(p.nextVisit)}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openEdit(p)}
-                    className="rounded-xl border border-mint-200 px-3.5 py-1.5 text-xs font-bold text-mint-800 dark:border-abyss-700 dark:text-mint-200"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => setDeleting(p)}
-                    className="rounded-xl border border-red-200 px-3.5 py-1.5 text-xs font-bold text-red-600 dark:border-red-900/60 dark:text-red-300"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+          <button
+            onClick={openAdd}
+            className="self-start rounded-full bg-ink px-6 py-3 text-sm font-semibold text-ivory shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-lift dark:bg-mint-300 dark:text-abyss-950 sm:self-auto"
+          >
+            + Add patient
+          </button>
+        </div>
+
+        {error && (
+          <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-red-900/15 bg-red-50 px-5 py-4 text-sm font-medium text-red-800 dark:border-red-400/20 dark:bg-red-950/40 dark:text-red-200" role="alert">
+            <span>{error}</span>
+            <button onClick={load} className="shrink-0 font-semibold underline underline-offset-4">Retry</button>
+          </div>
+        )}
+
+        {/* toolbar */}
+        <div data-reveal className="mt-8 rounded-3xl border border-ink/10 bg-white p-4 shadow-soft dark:border-white/10 dark:bg-white/[0.03] sm:p-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="relative flex-1">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink/35 dark:text-white/30">
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-4.3-4.3" />
+              </svg>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search name, phone or treatment…"
+                className="w-full rounded-xl border border-ink/12 bg-ivory/60 py-3 pl-11 pr-4 text-sm outline-none transition-all placeholder:text-ink/35 focus:border-ink/35 focus:bg-white focus:ring-4 focus:ring-ink/5 dark:border-white/12 dark:bg-white/[0.04] dark:placeholder:text-white/30 dark:focus:border-white/35 dark:focus:bg-white/[0.06] dark:focus:ring-white/5"
+              />
             </div>
-          ))
+            <div className="flex flex-wrap gap-2">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  onClick={() => setFilter(f.key)}
+                  className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition-all ${
+                    filter === f.key
+                      ? "bg-ink text-ivory dark:bg-mint-300 dark:text-abyss-950"
+                      : "border border-ink/12 text-ink/60 hover:border-ink/30 hover:text-ink dark:border-white/12 dark:text-white/55 dark:hover:border-white/30 dark:hover:text-white"
+                  }`}
+                >
+                  {f.label}
+                  <span className={`ml-1.5 ${filter === f.key ? "opacity-70" : "text-ink/40 dark:text-white/35"}`}>
+                    {counts[f.key]}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* desktop table */}
+        <div data-reveal className="mt-6 hidden overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-soft dark:border-white/10 dark:bg-white/[0.03] md:block">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-ink/10 text-[10px] uppercase tracking-[0.18em] text-ink/45 dark:border-white/10 dark:text-white/40">
+                <th className="px-7 py-4">
+                  <button onClick={() => toggleSort("name")} className="font-semibold transition-colors hover:text-ink dark:hover:text-white">
+                    Patient{sortArrow("name")}
+                  </button>
+                </th>
+                <th className="px-6 py-4 font-semibold">Contact</th>
+                <th className="px-6 py-4 font-semibold">Treatment</th>
+                <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-6 py-4">
+                  <button onClick={() => toggleSort("nextVisit")} className="font-semibold transition-colors hover:text-ink dark:hover:text-white">
+                    Next visit{sortArrow("nextVisit")}
+                  </button>
+                </th>
+                <th className="px-6 py-4 text-right font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-ink/[0.06] dark:border-white/[0.06]">
+                    <td className="px-7 py-5"><div className="skeleton h-4 w-36 rounded" /></td>
+                    <td className="px-6 py-5"><div className="skeleton h-4 w-28 rounded" /></td>
+                    <td className="px-6 py-5"><div className="skeleton h-4 w-32 rounded" /></td>
+                    <td className="px-6 py-5"><div className="skeleton h-6 w-20 rounded-full" /></td>
+                    <td className="px-6 py-5"><div className="skeleton h-4 w-24 rounded" /></td>
+                    <td className="px-6 py-5"><div className="skeleton ml-auto h-8 w-24 rounded-xl" /></td>
+                  </tr>
+                ))
+              ) : visible.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-16 text-center">
+                    <p className={`${fraunces.className} text-xl font-light`}>No patients found</p>
+                    <p className="mt-1.5 text-sm text-ink/55 dark:text-white/50">
+                      {patients.length === 0
+                        ? "Your clinic records are empty — add your first patient to get started."
+                        : "Try a different search or filter."}
+                    </p>
+                    {patients.length === 0 && (
+                      <button
+                        onClick={openAdd}
+                        className="mt-5 rounded-full bg-ink px-6 py-2.5 text-sm font-semibold text-ivory transition-all hover:-translate-y-0.5 dark:bg-mint-300 dark:text-abyss-950"
+                      >
+                        + Add first patient
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ) : (
+                visible.map((p) => (
+                  <tr key={p.id} className="border-b border-ink/[0.06] transition-colors last:border-0 hover:bg-ink/[0.025] dark:border-white/[0.06] dark:hover:bg-white/[0.025]">
+                    <td className="px-7 py-5">
+                      <p className="font-semibold">{p.name}</p>
+                      <p className="mt-0.5 text-xs text-ink/50 dark:text-white/45">Age {p.age}</p>
+                    </td>
+                    <td className="px-6 py-5">
+                      <p className="text-ink/80 dark:text-white/75">{p.phone}</p>
+                      {p.email && <p className="mt-0.5 text-xs text-ink/50 dark:text-white/45">{p.email}</p>}
+                    </td>
+                    <td className="px-6 py-5 text-ink/80 dark:text-white/75">{p.treatment}</td>
+                    <td className="px-6 py-5"><StatusBadge status={p.status} /></td>
+                    <td className="px-6 py-5 font-medium text-ink/80 dark:text-white/75">{formatDate(p.nextVisit)}</td>
+                    <td className="px-6 py-5">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => openEdit(p)}
+                          className="rounded-full border border-ink/15 px-4 py-1.5 text-xs font-semibold text-ink/70 transition-colors hover:border-ink/45 hover:text-ink dark:border-white/15 dark:text-white/60 dark:hover:border-white/45 dark:hover:text-white"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setDeleting(p)}
+                          className="rounded-full border border-red-900/15 px-4 py-1.5 text-xs font-semibold text-red-800/80 transition-colors hover:border-red-900/50 hover:text-red-900 dark:border-red-400/20 dark:text-red-200/80 dark:hover:border-red-400/50 dark:hover:text-red-200"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* mobile cards */}
+        <div className="mt-6 space-y-4 md:hidden">
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-3xl border border-ink/10 bg-white p-5 dark:border-white/10 dark:bg-white/[0.03]">
+                <div className="skeleton h-5 w-40 rounded" />
+                <div className="skeleton mt-3 h-4 w-56 rounded" />
+                <div className="skeleton mt-2 h-4 w-32 rounded" />
+              </div>
+            ))
+          ) : visible.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-ink/15 bg-white p-10 text-center dark:border-white/15 dark:bg-white/[0.03]">
+              <p className={`${fraunces.className} text-xl font-light`}>No patients found</p>
+              <p className="mt-1.5 text-sm text-ink/55 dark:text-white/50">
+                {patients.length === 0
+                  ? "Add your first patient to get started."
+                  : "Try a different search or filter."}
+              </p>
+              {patients.length === 0 && (
+                <button
+                  onClick={openAdd}
+                  className="mt-5 rounded-full bg-ink px-6 py-2.5 text-sm font-semibold text-ivory dark:bg-mint-300 dark:text-abyss-950"
+                >
+                  + Add first patient
+                </button>
+              )}
+            </div>
+          ) : (
+            visible.map((p) => (
+              <div
+                key={p.id}
+                data-reveal
+                className="rounded-3xl border border-ink/10 bg-white p-5 shadow-soft dark:border-white/10 dark:bg-white/[0.03]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold">{p.name}</p>
+                    <p className="mt-0.5 text-xs text-ink/50 dark:text-white/45">Age {p.age} · {p.phone}</p>
+                  </div>
+                  <StatusBadge status={p.status} />
+                </div>
+                <div className="mt-4 flex items-center justify-between border-t border-ink/[0.07] pt-4 dark:border-white/[0.07]">
+                  <div>
+                    <p className="text-sm text-ink/80 dark:text-white/75">{p.treatment}</p>
+                    <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink/55 dark:text-white/50">
+                      Next visit · {formatDate(p.nextVisit)}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="rounded-full border border-ink/15 px-4 py-1.5 text-xs font-semibold text-ink/70 dark:border-white/15 dark:text-white/60"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setDeleting(p)}
+                      className="rounded-full border border-red-900/15 px-4 py-1.5 text-xs font-semibold text-red-800/80 dark:border-red-400/20 dark:text-red-200/80"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <PatientModal
+          open={modalOpen}
+          patient={editing}
+          saving={saving}
+          error={modalError}
+          onClose={() => setModalOpen(false)}
+          onSave={save}
+        />
+
+        {deleting && (
+          <ConfirmDialog
+            name={deleting.name}
+            busy={deleteBusy}
+            onCancel={() => setDeleting(null)}
+            onConfirm={confirmDelete}
+          />
         )}
       </div>
-
-      <PatientModal
-        open={modalOpen}
-        patient={editing}
-        saving={saving}
-        error={modalError}
-        onClose={() => setModalOpen(false)}
-        onSave={save}
-      />
-
-      {deleting && (
-        <ConfirmDialog
-          name={deleting.name}
-          busy={deleteBusy}
-          onCancel={() => setDeleting(null)}
-          onConfirm={confirmDelete}
-        />
-      )}
     </AppShell>
   );
 }
@@ -449,8 +484,10 @@ export default function PatientsPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-mint-50/50 dark:bg-abyss-950">
-          <p className="text-sm font-medium text-slate-500 dark:text-mint-100/60">Loading patients…</p>
+        <div className="flex min-h-screen items-center justify-center bg-ivory dark:bg-abyss-950">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-ink/45 dark:text-white/40">
+            Loading patients
+          </p>
         </div>
       }
     >

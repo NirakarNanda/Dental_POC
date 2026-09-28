@@ -54,10 +54,16 @@ frontend/   Next.js 16 + React 19 + Tailwind v4 (+ GSAP for motion)
               theme/ (ThemeProvider — localStorage-persisted light/dark, mount-gated; ThemeToggle),
               ui/ (SpotlightCard, TypeReveal, SparkleField, SmileDivider — hand-written Aceternity-style)
 
-The landing page is a single viewport hero: typing headline, floating tooth art,
-sparkle field, smile-curve accent, and a Doctor Login CTA. No brochure sections.
-Light theme default; dark is a deep teal-navy, toggled from the landing header,
-the login page, and the dashboard shell (desktop sidebar + mobile top bar).
+The landing page is a single viewport hero in an editorial premium style: oversized
+Fraunces serif headline ("Gentle Dentistry, Crafted Around Your Smile.") wrapped
+around an AI-generated glass-orb visual (public/hero-orb.webp — a molar preserved
+in a luminous water-droplet sphere), quiet corner details (doctor monogram tile
+top-left, "2.5K+ healthy smiles" stat top-right), side notes, and a refined
+Doctor Login pill CTA. Motion is restrained: staggered line-mask headline reveal,
+slow orb float + glow pulse, gentle mouse parallax (GSAP). No brochure sections,
+no sparkles/typing/divider on the landing. Light theme default (warm ivory);
+dark is a deep teal-navy, toggled from the landing header, the login page, and
+the dashboard shell (desktop sidebar + mobile top bar).
 
 backend/    Express + TypeScript
   src/      index.ts, config.ts, types.ts

@@ -17,9 +17,9 @@ const ToastCtx = createContext<(message: string, kind?: ToastKind) => void>(
 export const useToast = () => useContext(ToastCtx);
 
 const KIND_STYLES: Record<ToastKind, string> = {
-  success: "border-mint-200 bg-mint-600 text-white dark:border-mint-800 dark:bg-mint-700",
-  error: "border-red-200 bg-red-600 text-white dark:border-red-800 dark:bg-red-700",
-  info: "border-mint-200 bg-white text-mint-950 dark:border-abyss-700 dark:bg-abyss-800 dark:text-mint-50",
+  success: "border-ink/20 bg-ink text-ivory dark:border-white/15 dark:bg-mint-300 dark:text-abyss-950",
+  error: "border-red-900/20 bg-red-800 text-white dark:border-red-400/25 dark:bg-red-700",
+  info: "border-ink/15 bg-white text-ink dark:border-white/15 dark:bg-abyss-800 dark:text-[#edf7f5]",
 };
 
 export default function ToastProvider({

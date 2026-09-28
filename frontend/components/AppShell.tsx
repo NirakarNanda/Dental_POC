@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
 import ToastProvider from "@/components/Toast";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import { fraunces } from "@/lib/fonts";
 import { useRequireAuth } from "@/lib/auth";
 
 const NAV = [
@@ -12,7 +13,7 @@ const NAV = [
     label: "Dashboard",
     href: "/dashboard",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1.5" />
         <rect x="14" y="3" width="7" height="7" rx="1.5" />
         <rect x="3" y="14" width="7" height="7" rx="1.5" />
@@ -24,7 +25,7 @@ const NAV = [
     label: "Patients",
     href: "/patients",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
@@ -39,39 +40,47 @@ function ShellInner({ children }: { children: React.ReactNode }) {
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-mint-50/50 dark:bg-abyss-950">
-        <div className="flex flex-col items-center gap-4">
-          <Logo size={52} className="animate-pulse" />
-          <div className="h-2 w-40 overflow-hidden rounded-full bg-mint-100 dark:bg-abyss-800">
-            <div className="skeleton h-full w-full rounded-full" />
+      <div className="flex min-h-screen items-center justify-center bg-ivory dark:bg-abyss-950">
+        <div className="flex flex-col items-center gap-5">
+          <Logo size={48} className="animate-pulse" />
+          <div className="h-px w-44 overflow-hidden bg-ink/10 dark:bg-white/10">
+            <div className="skeleton h-full w-full" />
           </div>
-          <p className="text-sm font-medium text-slate-500 dark:text-mint-100/60">Loading PearlSmile studio…</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-ink/45 dark:text-white/40">
+            Opening PearlSmile studio
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-mint-50/70 via-white to-aqua-50/50 dark:from-abyss-950 dark:via-abyss-950 dark:to-abyss-900 lg:flex">
+    <div className="min-h-screen bg-ivory text-ink dark:bg-abyss-950 dark:text-[#edf7f5] lg:flex">
       {/* Sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col bg-white/80 px-5 py-6 backdrop-blur-xl dark:bg-abyss-950/80 lg:flex">
-        <Link href="/dashboard" className="flex items-center gap-2.5 px-2">
-          <Logo size={38} />
-          <span className="text-[17px] font-bold tracking-tight text-mint-950 dark:text-white">
-            PearlSmile <span className="font-medium text-mint-700 dark:text-mint-300">Studio</span>
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-ink/10 bg-white/70 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.03] lg:flex">
+        <Link href="/dashboard" className="flex items-center gap-3 px-7 pt-7" aria-label="PearlSmile dashboard">
+          <Logo size={36} />
+          <span className="leading-none">
+            <span className={`${fraunces.className} block text-[21px] font-medium tracking-tight`}>
+              PearlSmile
+            </span>
+            <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.3em] text-ink/50 dark:text-white/45">
+              Dental Studio
+            </span>
           </span>
         </Link>
-        <nav className="mt-10 flex flex-col gap-1.5">
+
+        <nav className="mt-10 flex flex-col gap-1 px-4">
           {NAV.map((n) => {
             const active = pathname === n.href;
             return (
               <Link
                 key={n.href}
                 href={n.href}
-                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-mint-600 text-white shadow-soft"
-                    : "text-slate-600 hover:bg-mint-50 hover:text-mint-800 dark:text-mint-100/70 dark:hover:bg-abyss-800 dark:hover:text-mint-200"
+                    ? "bg-ink text-ivory dark:bg-mint-300 dark:text-abyss-950"
+                    : "text-ink/60 hover:bg-ink/5 hover:text-ink dark:text-white/55 dark:hover:bg-white/5 dark:hover:text-white"
                 }`}
               >
                 {n.icon}
@@ -83,22 +92,25 @@ function ShellInner({ children }: { children: React.ReactNode }) {
             href="/"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition-all hover:bg-mint-50 hover:text-mint-800 dark:text-mint-100/70 dark:hover:bg-abyss-800 dark:hover:text-mint-200"
+            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-ink/60 transition-colors hover:bg-ink/5 hover:text-ink dark:text-white/55 dark:hover:bg-white/5 dark:hover:text-white"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="9" />
               <path d="M3 12h18M12 3a15 15 0 010 18 15 15 0 010-18z" />
             </svg>
             Website
           </a>
         </nav>
-        <div className="mt-auto flex items-center gap-3">
-          <div className="min-w-0 flex-1 rounded-2xl bg-mint-50 p-4 dark:bg-abyss-900">
-            <p className="text-xs font-semibold text-slate-500 dark:text-mint-100/60">Signed in as</p>
-            <p className="mt-0.5 truncate text-sm font-bold text-mint-950 dark:text-white">{user.name}</p>
+
+        <div className="mt-auto flex items-center gap-3 px-4 pb-6">
+          <div className="min-w-0 flex-1 rounded-2xl border border-ink/10 bg-white/80 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink/45 dark:text-white/40">
+              Signed in as
+            </p>
+            <p className="mt-1 truncate text-sm font-semibold">{user.name}</p>
             <button
               onClick={logout}
-              className="mt-3 w-full rounded-xl border border-mint-200 bg-white py-2 text-xs font-bold text-mint-800 transition-colors hover:bg-mint-600 hover:text-white dark:border-abyss-700 dark:bg-abyss-800 dark:text-mint-200 dark:hover:bg-mint-600 dark:hover:text-white"
+              className="mt-3 w-full rounded-full border border-ink/15 py-2 text-xs font-semibold text-ink/70 transition-colors hover:border-ink/40 hover:text-ink dark:border-white/15 dark:text-white/60 dark:hover:border-white/40 dark:hover:text-white"
             >
               Sign out
             </button>
@@ -108,35 +120,34 @@ function ShellInner({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-40 flex items-center justify-between bg-white/85 px-5 py-3 backdrop-blur-xl dark:bg-abyss-950/85 lg:hidden">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <Logo size={32} />
-          <span className="text-base font-bold text-mint-950 dark:text-white">PearlSmile</span>
+      <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-ink/10 bg-ivory/90 px-4 py-2.5 backdrop-blur-xl dark:border-white/10 dark:bg-abyss-950/90 lg:hidden">
+        <Link href="/dashboard" className="flex shrink-0 items-center" aria-label="PearlSmile dashboard">
+          <Logo size={30} />
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-1">
           {NAV.map((n) => {
             const active = pathname === n.href;
             return (
               <Link
                 key={n.href}
                 href={n.href}
-                className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                className={`rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors ${
                   active
-                    ? "bg-mint-600 text-white"
-                    : "text-slate-600 hover:bg-mint-50 dark:text-mint-100/70 dark:hover:bg-abyss-800"
+                    ? "bg-ink text-ivory dark:bg-mint-300 dark:text-abyss-950"
+                    : "text-ink/60 hover:bg-ink/5 dark:text-white/55 dark:hover:bg-white/5"
                 }`}
               >
                 {n.label}
               </Link>
             );
           })}
-          <ThemeToggle className="h-9 w-9" />
+          <ThemeToggle className="h-8 w-8" />
           <button
             onClick={logout}
-            className="rounded-full px-3 py-2 text-sm font-semibold text-slate-500 hover:bg-red-50 hover:text-red-600 dark:text-mint-100/60 dark:hover:bg-red-950/60 dark:hover:text-red-300"
+            className="rounded-full p-1.5 text-ink/50 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-white/50 dark:hover:bg-red-950/50 dark:hover:text-red-300"
             aria-label="Sign out"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
             </svg>
           </button>
@@ -144,7 +155,7 @@ function ShellInner({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Main */}
-      <main className="min-w-0 flex-1 px-5 py-6 sm:px-8 lg:py-8">
+      <main className="min-w-0 flex-1 px-5 py-8 sm:px-8 lg:py-10">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
     </div>

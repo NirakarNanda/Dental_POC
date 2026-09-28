@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fraunces } from "@/lib/fonts";
 import {
   STATUSES,
   TREATMENTS,
@@ -83,31 +84,36 @@ export default function PatientModal({ open, patient, saving, error, onClose, on
   };
 
   const inputCls =
-    "w-full rounded-xl border border-mint-100 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-mint-400 focus:ring-4 focus:ring-mint-100 dark:border-abyss-700 dark:bg-abyss-950 dark:text-mint-50 dark:placeholder:text-mint-100/40 dark:focus:border-mint-500 dark:focus:ring-mint-900/50";
-  const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-mint-100/60";
+    "w-full rounded-xl border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 outline-none transition-all focus:border-ink/40 focus:ring-4 focus:ring-ink/5 dark:border-white/15 dark:bg-white/[0.05] dark:text-[#edf7f5] dark:placeholder:text-white/30 dark:focus:border-white/40 dark:focus:ring-white/5";
+  const labelCls = "mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/50 dark:text-white/45";
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center bg-mint-950/40 p-4 backdrop-blur-sm dark:bg-black/60 sm:items-center"
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-ink/40 p-4 backdrop-blur-sm dark:bg-black/60 sm:items-center"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={patient ? "Edit patient" : "Add patient"}
     >
       <div
-        className="animate-fade-up slim-scroll max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 shadow-lift dark:bg-abyss-900 sm:p-8"
+        className="animate-fade-up slim-scroll max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] border border-ink/10 bg-white p-6 shadow-lift dark:border-white/10 dark:bg-abyss-900 sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold tracking-tight text-mint-950 dark:text-white">
-            {patient ? "Edit patient" : "Add new patient"}
-          </h2>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink/45 dark:text-white/40">
+              {patient ? "Clinic records" : "New record"}
+            </p>
+            <h2 className={`${fraunces.className} mt-1 text-[1.7rem] font-light tracking-tight`}>
+              {patient ? "Edit patient" : "Add new patient"}
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-mint-50 hover:text-mint-800 dark:hover:bg-abyss-800 dark:hover:text-mint-200"
+            className="rounded-full p-2 text-ink/40 transition-colors hover:bg-ink/5 hover:text-ink dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white"
             aria-label="Close"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
@@ -156,7 +162,7 @@ export default function PatientModal({ open, patient, saving, error, onClose, on
           </div>
 
           {error && (
-            <div className="col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 dark:border-red-900/60 dark:bg-red-950/50 dark:text-red-300" role="alert">
+            <div className="col-span-2 rounded-xl border border-red-900/15 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-800 dark:border-red-400/20 dark:bg-red-950/40 dark:text-red-200" role="alert">
               {error}
             </div>
           )}
@@ -165,14 +171,14 @@ export default function PatientModal({ open, patient, saving, error, onClose, on
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-2xl border border-mint-200 py-3 text-sm font-bold text-mint-800 transition-colors hover:bg-mint-50 dark:border-abyss-700 dark:text-mint-200 dark:hover:bg-abyss-800"
+              className="flex-1 rounded-full border border-ink/15 py-3 text-sm font-semibold text-ink/70 transition-colors hover:border-ink/40 hover:text-ink dark:border-white/15 dark:text-white/60 dark:hover:border-white/40 dark:hover:text-white"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 rounded-2xl bg-mint-600 py-3 text-sm font-bold text-white shadow-soft transition-all hover:bg-mint-700 disabled:opacity-60"
+              className="flex-1 rounded-full bg-ink py-3 text-sm font-semibold text-ivory shadow-soft transition-all hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-60 dark:bg-mint-300 dark:text-abyss-950"
             >
               {saving ? "Saving…" : patient ? "Save changes" : "Add patient"}
             </button>
