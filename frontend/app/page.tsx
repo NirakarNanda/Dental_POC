@@ -42,7 +42,7 @@ export default function LandingPage() {
         gsap.set(".hl-inner", { yPercent: 0 });
         gsap.set("[data-fade]", { opacity: 1, y: 0 });
         gsap.set("[data-orb-enter]", { opacity: 1, scale: 1 });
-        gsap.set(".flora-sway", { rotation: 0 });
+        gsap.set(".flora-layer", { rotation: 0, x: 0 });
         gsap.set("[data-petal]", { opacity: 0.7 });
         return;
       }
@@ -148,16 +148,18 @@ export default function LandingPage() {
         };
         window.addEventListener("mousemove", onMove);
 
-        // ── Wildflower wind: staggered swaying stems ───────────
-        const stems = gsap.utils.toArray<HTMLElement>(".flora-sway");
-        stems.forEach((stem) => {
-          gsap.to(stem, {
-            rotation: rand(2, 4) * (Math.random() < 0.5 ? -1 : 1),
-            duration: rand(3, 6),
+        // ── Botanical wind: each photo layer sways on its own
+        // rhythm for parallax depth ─────────────────────────────
+        const layers = gsap.utils.toArray<HTMLElement>(".flora-layer");
+        layers.forEach((layer, i) => {
+          gsap.to(layer, {
+            rotation: (i === 0 ? 1 : -1) * rand(1, 1.5),
+            x: (i === 0 ? -1 : 1) * rand(8, 18),
+            duration: rand(4, 7),
             yoyo: true,
             repeat: -1,
             ease: "sine.inOut",
-            delay: rand(0, 2.5),
+            delay: rand(0, 2),
           });
         });
 
@@ -178,15 +180,16 @@ export default function LandingPage() {
         return () => window.removeEventListener("mousemove", onMove);
       }
 
-      // No fine pointer: still sway the flora + drift petals
-      gsap.utils.toArray<HTMLElement>(".flora-sway").forEach((stem) => {
-        gsap.to(stem, {
-          rotation: rand(2, 4) * (Math.random() < 0.5 ? -1 : 1),
-          duration: rand(3, 6),
+      // No fine pointer: still sway the flora layers
+      gsap.utils.toArray<HTMLElement>(".flora-layer").forEach((layer, i) => {
+        gsap.to(layer, {
+          rotation: (i === 0 ? 1 : -1) * rand(1, 1.5),
+          x: (i === 0 ? -1 : 1) * rand(8, 18),
+          duration: rand(4, 7),
           yoyo: true,
           repeat: -1,
           ease: "sine.inOut",
-          delay: rand(0, 2.5),
+          delay: rand(0, 2),
         });
       });
     },
