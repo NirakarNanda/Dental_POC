@@ -405,15 +405,64 @@ function ChangePassword() {
   );
 }
 
+const SECTIONS = [
+  { value: "clinic", label: "Clinic profile", hint: "Name, phone, address — shown across the app." },
+  { value: "appointments", label: "Booking defaults", hint: "Your standard consultation fee, pre-filled on every booking." },
+  { value: "appearance", label: "Appearance", hint: "Light, dark, or follow this device automatically." },
+  { value: "data", label: "Data export", hint: "Download patients and appointments as CSV files." },
+  { value: "security", label: "Security", hint: "Change your sign-in password." },
+];
+
 function SettingsInner() {
+  const [section, setSection] = useState(SECTIONS[0].value);
+  const active = SECTIONS.find((s) => s.value === section) ?? SECTIONS[0];
+
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6">
-      <ClinicProfile />
-      <AppointmentDefaults />
-      <Appearance />
-      <DataExport />
-      <ChangePassword />
-      <p className="pb-2 text-center text-[12px] leading-relaxed text-ink/40 dark:text-white/35">
+    <div className="mx-auto w-full max-w-2xl">
+      <div className="mb-6">
+        <label className={labelCls} htmlFor="settings-section">
+          Settings section
+        </label>
+        <div className="relative">
+          <select
+            id="settings-section"
+            value={section}
+            onChange={(e) => setSection(e.target.value)}
+            className={`${inputCls} cursor-pointer appearance-none pr-11 font-medium dark:[color-scheme:dark]`}
+          >
+            {SECTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink/40 dark:text-white/40"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
+        <p className="mt-2 text-[13px] text-ink/50 dark:text-white/45">{active.hint}</p>
+      </div>
+
+      <div key={section} className="settings-enter">
+        {section === "clinic" && <ClinicProfile />}
+        {section === "appointments" && <AppointmentDefaults />}
+        {section === "appearance" && <Appearance />}
+        {section === "data" && <DataExport />}
+        {section === "security" && <ChangePassword />}
+      </div>
+
+      <p className="mt-6 pb-2 text-center text-[12px] leading-relaxed text-ink/40 dark:text-white/35">
         Clinic profile and defaults are saved on this device. Password changes apply to your account everywhere.
       </p>
     </div>

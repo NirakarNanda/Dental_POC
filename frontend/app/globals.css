@@ -282,3 +282,23 @@ body {
     animation: none;
   }
 }
+
+/* Settings section switcher: gentle fade-rise when a new section appears. */
+@keyframes settings-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.settings-enter {
+  animation: settings-enter 0.32s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-enter {
+    animation: none;
+  }
+}
