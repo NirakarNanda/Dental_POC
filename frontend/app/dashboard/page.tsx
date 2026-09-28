@@ -13,12 +13,14 @@ import {
 } from "recharts";
 import AppShell from "@/components/AppShell";
 import BookAppointmentModal from "@/components/BookAppointmentModal";
+import WhatsAppReminderButton from "@/components/WhatsAppReminderButton";
 import { useToast } from "@/components/Toast";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { fraunces } from "@/lib/fonts";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { api, formatDate, type Appointment, type NewAppointment, type Patient, type RevenueSummary } from "@/lib/api";
 import { useRequireAuth } from "@/lib/auth";
+import { addDays, formatDateShort, formatTime12 } from "@/lib/slots";
 import { reminderMessage, whatsappUrl } from "@/lib/whatsapp";
 
 function StatSkeleton() {
@@ -104,6 +106,7 @@ export default function DashboardPage() {
   const isDark = theme === "dark";
   const rootRef = useRef<HTMLDivElement>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [upcoming, setUpcoming] = useState<Appointment[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [revenue, setRevenue] = useState<RevenueSummary>({ total: 0, count: 0 });
   const [loading, setLoading] = useState(true);
@@ -115,15 +118,24 @@ export default function DashboardPage() {
 
   const load = async (alive: () => boolean) => {
     try {
-      const [a, p, r] = await Promise.all([
+      const today = localDateKey();
+      const [a, p, r, u] = await Promise.all([
         api.todayAppointments(),
         api.listPatients(),
         api.monthRevenue(),
+        api.listAppointments(today, addDays(today, 14)),
       ]);
       if (!alive()) return;
       setAppointments(a.appointments);
       setPatients(p.patients);
       setRevenue(r);
+      setUpcoming(
+        u.appointments
+          .filter((x) => x.date && x.date > today && x.status === "scheduled")
+          .sort((x, y) =>
+            `${x.date}T${x.time}`.localeCompare(`${y.date}T${y.time}`),
+          ),
+      );
       setLoading(false);
     } catch (e) {
       if (!alive()) return;
@@ -184,7 +196,7 @@ export default function DashboardPage() {
       a.phone ?? "",
       reminderMessage({
         patientName: a.patientName,
-        date: localDateKey(),
+        date: a.date ?? localDateKey(),
         time: a.time,
         treatment: a.treatment,
       }),
@@ -339,7 +351,8 @@ export default function DashboardPage() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-5">
           {/* today's appointments */}
-          <div data-reveal className="glass rounded-3xl p-6 sm:p-7 lg:col-span-3">
+          <div className="flex flex-col gap-6 lg:col-span-3">
+          <div data-reveal className="glass rounded-3xl p-6 sm:p-7">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className={`${fraunces.className} text-[1.45rem] font-light tracking-tight`}>
@@ -398,16 +411,10 @@ export default function DashboardPage() {
                       </span>
                       {a.status === "scheduled" && (
                         <div className="flex shrink-0 items-center gap-1.5">
-                          <button
+                          <WhatsAppReminderButton
+                            patientName={a.patientName}
                             onClick={() => sendReminder(a)}
-                            title="Send WhatsApp reminder"
-                            aria-label={`Send WhatsApp reminder to ${a.patientName}`}
-                            className="rounded-full border border-ink/15 p-2 text-ink/60 transition-colors hover:border-emerald-600/50 hover:text-emerald-700 dark:border-white/15 dark:text-white/60 dark:hover:border-emerald-400/50 dark:hover:text-emerald-300"
-                          >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
-                            </svg>
-                          </button>
+                          />
                           <button
                             onClick={() => setStatus(a.id, "completed")}
                             disabled={updatingId === a.id}
@@ -431,6 +438,73 @@ export default function DashboardPage() {
                 })
               )}
             </div>
+          </div>
+
+          {/* Upcoming appointments — the doctor's reminder list */}
+          <div data-reveal className="glass rounded-3xl p-6 sm:p-7">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className={`${fraunces.className} text-[1.45rem] font-light tracking-tight`}>
+                  Upcoming appointments
+                </h2>
+                <p className="mt-0.5 text-xs text-ink/50 dark:text-white/45">
+                  {upcoming.length === 0
+                    ? "Next 14 days are clear"
+                    : `${upcoming.length} scheduled in the next 14 days`}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4">
+              {loading ? (
+                <div className="skeleton h-24 rounded-2xl" />
+              ) : upcoming.length === 0 ? (
+                <div className="glass rounded-2xl border border-dashed border-ink/15 p-8 text-center dark:border-white/15">
+                  <p className={`${fraunces.className} text-lg font-light`}>All clear</p>
+                  <p className="mt-1 text-xs text-ink/50 dark:text-white/45">
+                    Nothing scheduled for the next 14 days.
+                  </p>
+                </div>
+              ) : (
+                upcoming.map((a) => {
+                  const isTomorrow = a.date === addDays(localDateKey(), 1);
+                  return (
+                    <div
+                      key={a.id}
+                      className="flex items-center gap-4 border-b border-ink/[0.07] py-4 transition-colors last:border-0 hover:bg-ink/[0.02] dark:border-white/[0.07] dark:hover:bg-white/[0.02]"
+                    >
+                      <div className="flex h-12 w-[4.75rem] shrink-0 flex-col items-center justify-center rounded-xl bg-ink/[0.05] dark:bg-white/[0.06]">
+                        <span className="text-[11px] font-bold leading-tight">
+                          {a.date ? formatDateShort(a.date) : ""}
+                        </span>
+                        <span className="text-[11px] leading-tight text-ink/60 dark:text-white/55">
+                          {formatTime12(a.time)}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="flex items-center gap-2 truncate text-sm font-semibold">
+                          <span className="truncate">{a.patientName}</span>
+                          {isTomorrow && (
+                            <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                              Tomorrow
+                            </span>
+                          )}
+                        </p>
+                        <p className="truncate text-xs text-ink/50 dark:text-white/45">
+                          {a.treatment} · ₹{Number(a.fee).toLocaleString("en-IN")}
+                        </p>
+                      </div>
+                      <div className="shrink-0">
+                        <WhatsAppReminderButton
+                          patientName={a.patientName}
+                          onClick={() => sendReminder(a)}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
           </div>
 
           {/* chart + quick actions */}

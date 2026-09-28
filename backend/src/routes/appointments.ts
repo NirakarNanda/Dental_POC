@@ -126,9 +126,13 @@ appointmentsRouter.get("/", async (req, res) => {
     return;
   }
   const all = await getDb().getAppointments();
-  const appointments = all.filter(
-    (a) => (!from || a.date >= from) && (!to || a.date <= to),
-  );
+  const patients = await getDb().getPatients();
+  const phoneById = new Map(patients.map((p) => [p.id, p.phone]));
+  const appointments = all
+    .filter(
+      (a) => (!from || a.date >= from) && (!to || a.date <= to),
+    )
+    .map((a) => ({ ...a, phone: phoneById.get(a.patientId) ?? "" }));
   res.json({ appointments });
 });
 

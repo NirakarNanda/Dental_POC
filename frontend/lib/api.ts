@@ -20,6 +20,7 @@ export interface Appointment {
   id: string;
   patientName: string;
   phone?: string;
+  date?: string; // yyyy-mm-dd (present on list endpoints)
   time: string;
   treatment: string;
   status: string;
