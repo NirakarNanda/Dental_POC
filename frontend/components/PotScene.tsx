@@ -25,10 +25,11 @@ export default function PotScene() {
           alt=""
           fill
           sizes="(max-width: 640px) 305px, 40vw"
-          className="pot-plant object-cover object-bottom dark:brightness-[0.62] dark:saturate-[0.85]"
+          className="pot-plant object-cover object-bottom dark:brightness-[0.35] dark:saturate-[0.8]"
         />
-        {/* cool tint so the photo melts into the dark theme */}
-        <div className="absolute inset-0 hidden dark:block dark:bg-[#0d3b38]/35" />
+        {/* navy grade: slight veil over the center, full navy at the edges —
+            the plant emerges from darkness, no visible rectangle */}
+        <div className="absolute inset-0 hidden bg-[radial-gradient(ellipse_at_center,rgba(4,31,30,0.55)_0%,transparent_30%,#041f1e_72%)] dark:block" />
       </div>
     </div>
   );

@@ -30,7 +30,6 @@ export default function LandingPage() {
   const floatRef = useRef<HTMLDivElement>(null);
   const spinRef = useRef<HTMLDivElement>(null);
   const breatheRef = useRef<HTMLDivElement>(null);
-  const sweepRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
@@ -115,20 +114,6 @@ export default function LandingPage() {
         ease: "sine.inOut",
         delay: 2,
       });
-      // Animated specular sweep across the glass every ~5s
-      gsap.fromTo(
-        sweepRef.current,
-        { xPercent: -160 },
-        {
-          xPercent: 460,
-          duration: 1.4,
-          ease: "power2.inOut",
-          repeat: -1,
-          repeatDelay: 3.6,
-          delay: 2.6,
-        },
-      );
-
       // Subtle mouse parallax on the whole bubble group (±18px)
       const fine = window.matchMedia("(pointer: fine)").matches;
 
@@ -345,24 +330,24 @@ export default function LandingPage() {
                     ref={breatheRef}
                     className="relative h-[clamp(220px,34vw,400px)] w-[clamp(220px,34vw,400px)]"
                   >
-                    {/* 3D glass sphere: spherical shading + glass rim + glow */}
+                    {/* 3D glass sphere: smooth sheen + hairline rim + warm glow */}
                     <div
                       aria-hidden="true"
                       className="orb-sphere absolute inset-0 rounded-full"
+                    />
+                    {/* tooth floating inside the glass */}
+                    <Image
+                      src="/tooth.png"
+                      alt=""
+                      width={400}
+                      height={400}
+                      className="absolute left-1/2 top-1/2 h-[58%] w-[58%] -translate-x-1/2 -translate-y-1/2 object-contain"
                     />
                     {/* one specular highlight at ~10 o'clock */}
                     <div
                       aria-hidden="true"
                       className="absolute left-[17%] top-[11%] h-[9%] w-[15%] -rotate-[24deg] rounded-[100%] bg-white/70 blur-[7px] dark:bg-white/60"
                     />
-                    {/* travelling specular highlight, clipped to the sphere */}
-                    <div className="absolute inset-0 overflow-hidden rounded-full">
-                      <div
-                        ref={sweepRef}
-                        aria-hidden="true"
-                        className="absolute -bottom-[20%] -top-[20%] left-0 w-1/3 rotate-[18deg] bg-gradient-to-r from-transparent via-white/50 to-transparent blur-md"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
