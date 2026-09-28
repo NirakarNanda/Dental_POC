@@ -43,82 +43,6 @@ function Section({
   );
 }
 
-function ClinicProfile() {
-  const { clinicName, phone, address, update } = useSettings();
-  const toast = useToast();
-  const [name, setName] = useState(clinicName);
-  const [ph, setPh] = useState(phone);
-  const [addr, setAddr] = useState(address);
-
-  // Sync once the persisted settings load.
-  useEffect(() => {
-    setName(clinicName);
-    setPh(phone);
-    setAddr(address);
-  }, [clinicName, phone, address]);
-
-  const save = () => {
-    const trimmed = name.trim();
-    if (!trimmed) {
-      toast("Clinic name can't be empty.", "error");
-      return;
-    }
-    update({ clinicName: trimmed, phone: ph.trim(), address: addr.trim() });
-    toast("Clinic profile saved — it's now showing across the app.", "success");
-  };
-
-  return (
-    <Section
-      kicker="Clinic profile"
-      title="Your practice, your name"
-      blurb="This appears in the sidebar, the top bar, and on anything you export. Phone and address are kept handy for future receipts and reminders."
-    >
-      <div className="space-y-5">
-        <div>
-          <label className={labelCls} htmlFor="clinic-name">Clinic name</label>
-          <input
-            id="clinic-name"
-            className={inputCls}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="PearlSmile"
-            maxLength={40}
-          />
-        </div>
-        <div>
-          <label className={labelCls} htmlFor="clinic-phone">Phone</label>
-          <input
-            id="clinic-phone"
-            className={inputCls}
-            value={ph}
-            onChange={(e) => setPh(e.target.value)}
-            placeholder="+91 98765 43210"
-            inputMode="tel"
-          />
-        </div>
-        <div>
-          <label className={labelCls} htmlFor="clinic-address">Address</label>
-          <input
-            id="clinic-address"
-            className={inputCls}
-            value={addr}
-            onChange={(e) => setAddr(e.target.value)}
-            placeholder="Street, area, city"
-            maxLength={120}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={save}
-          className="rounded-full bg-ink px-7 py-3 text-[15px] font-semibold tracking-wide text-ivory shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift dark:bg-mint-300 dark:text-abyss-950"
-        >
-          Save profile
-        </button>
-      </div>
-    </Section>
-  );
-}
-
 function AppointmentDefaults() {
   const { defaultFee, update } = useSettings();
   const toast = useToast();
@@ -406,7 +330,6 @@ function ChangePassword() {
 }
 
 const SECTIONS = [
-  { value: "clinic", label: "Clinic profile", hint: "Name, phone, address — shown across the app." },
   { value: "appointments", label: "Booking defaults", hint: "Your standard consultation fee, pre-filled on every booking." },
   { value: "appearance", label: "Appearance", hint: "Light, dark, or follow this device automatically." },
   { value: "data", label: "Data export", hint: "Download patients and appointments as CSV files." },
@@ -455,7 +378,6 @@ function SettingsInner() {
       </div>
 
       <div key={section} className="settings-enter">
-        {section === "clinic" && <ClinicProfile />}
         {section === "appointments" && <AppointmentDefaults />}
         {section === "appearance" && <Appearance />}
         {section === "data" && <DataExport />}
@@ -463,7 +385,7 @@ function SettingsInner() {
       </div>
 
       <p className="mt-6 pb-2 text-center text-[12px] leading-relaxed text-ink/40 dark:text-white/35">
-        Clinic profile and defaults are saved on this device. Password changes apply to your account everywhere.
+        Booking defaults are saved on this device. Password changes apply to your account everywhere.
       </p>
     </div>
   );

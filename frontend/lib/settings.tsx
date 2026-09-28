@@ -10,9 +10,6 @@ import {
 } from "react";
 
 export interface ClinicSettings {
-  clinicName: string;
-  phone: string;
-  address: string;
   /** Pre-filled fee (₹) when booking an appointment. */
   defaultFee: number;
 }
@@ -20,9 +17,6 @@ export interface ClinicSettings {
 const STORAGE_KEY = "pearlsmile-settings";
 
 const DEFAULTS: ClinicSettings = {
-  clinicName: "PearlSmile",
-  phone: "",
-  address: "",
   defaultFee: 500,
 };
 
@@ -45,12 +39,6 @@ function readStored(): ClinicSettings {
     if (!raw) return DEFAULTS;
     const parsed = JSON.parse(raw) as Partial<ClinicSettings>;
     return {
-      clinicName:
-        typeof parsed.clinicName === "string" && parsed.clinicName.trim()
-          ? parsed.clinicName.trim()
-          : DEFAULTS.clinicName,
-      phone: typeof parsed.phone === "string" ? parsed.phone : "",
-      address: typeof parsed.address === "string" ? parsed.address : "",
       defaultFee:
         typeof parsed.defaultFee === "number" &&
         Number.isFinite(parsed.defaultFee) &&
