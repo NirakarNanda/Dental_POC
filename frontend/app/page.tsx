@@ -87,9 +87,11 @@ export default function LandingPage() {
       );
 
       // ── Bubble life ──────────────────────────────────────────
-      // Gentle vertical bob (±14px, ~6s)
+      // Gentle vertical bob (±10px, ~6s). Kept small on purpose: the static
+      // gap between the bubble rim and the CTA pill is ~45px, so the bob +
+      // breathe + parallax can never close it.
       gsap.to(floatRef.current, {
-        y: -14,
+        y: -10,
         duration: 6,
         yoyo: true,
         repeat: -1,
@@ -114,7 +116,9 @@ export default function LandingPage() {
         ease: "sine.inOut",
         delay: 2,
       });
-      // Subtle mouse parallax on the whole bubble group (±18px)
+      // Subtle mouse parallax on the whole bubble group (±12px).
+      // Deliberately smaller than the CTA clearance so the bubble never
+      // drifts onto the login pill.
       const fine = window.matchMedia("(pointer: fine)").matches;
 
       // ── Orchid pot: barely-there slow zoom, a living still-life ──
@@ -188,8 +192,8 @@ export default function LandingPage() {
         const onMove = (e: MouseEvent) => {
           const nx = e.clientX / window.innerWidth - 0.5;
           const ny = e.clientY / window.innerHeight - 0.5;
-          qx(nx * 36);
-          qy(ny * 36);
+          qx(nx * 24);
+          qy(ny * 24);
         };
         window.addEventListener("mousemove", onMove);
 
@@ -369,8 +373,10 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* ── CTA ── */}
-        <div data-fade className="mt-14 flex flex-col items-center gap-4 lg:mt-16">
+        {/* ── CTA: generous top margin so the bubble's float (±10px),
+            breathe, and mouse parallax can never reach the pill. The pill
+            also sits above the bubble in paint order (z-20) as insurance. ── */}
+        <div data-fade className="relative z-20 mt-20 flex flex-col items-center gap-4 lg:mt-24">
           <Link
             href="/login"
             className="group inline-flex items-center gap-3 rounded-full border border-[#0e2a28]/15 bg-white/85 py-4 pl-9 pr-7 text-[15px] font-semibold tracking-wide text-[#0e2a28] shadow-soft backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-[#0e2a28]/30 hover:shadow-lift dark:border-white/15 dark:bg-white/[0.07] dark:text-white dark:hover:border-white/30"
@@ -409,14 +415,14 @@ export default function LandingPage() {
 
       {/* ── side note: The Standard — far right, in the open space between
           the stat stack (top-anchored, ends ~256px) and the orchid (52vh
-          tall, bottom-anchored). The bottom offset parks it just above the
-          plant's max height at any window size; PIL alpha checks confirm
-          the blooms never reach this band. (Beside-the-button placement was
-          tried and reverted: at 1440px the centered login pill extends into
-          that zone, so the two overlapped.) */}
+          tall, bottom-anchored). Shown only at ≥1366px wide and ≥760px tall:
+          at exactly 1280px the measured Fraunces headline ("Gentle
+          Dentistry," = 738px at 89.6px) leaves <4px of room, so the note
+          hides there rather than graze the type. PIL alpha checks confirm
+          the blooms never reach this band at any shown size. */}
       <div
         data-fade
-        className="absolute bottom-[calc(52vh+1.25rem)] right-6 z-10 hidden w-56 text-right lg:right-12 xl:min-[760px]:block"
+        className="absolute bottom-[calc(52vh+1.25rem)] right-6 z-10 hidden w-56 text-right min-[1366px]:min-[760px]:block lg:right-12"
       >
         <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#0e2a28]/45 dark:text-white/40">
           The Standard
