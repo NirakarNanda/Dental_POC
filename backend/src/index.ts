@@ -1,7 +1,10 @@
+import bcrypt from "bcrypt";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import session from "express-session";
+import fs from "fs";
+import path from "path";
 import { SESSION_COOKIE_NAME } from "./config";
 import { getDb, getDbMode, initDb } from "./db";
 import { requireAuth } from "./middleware/auth";
@@ -72,12 +75,48 @@ app.use("/api", (_req, res) => {
   res.status(404).json({ ok: false, message: "Not found" });
 });
 
+// Desktop mode: the Electron shell points PEARLSMILE_STATIC_DIR at the
+// exported Next.js frontend, and this server delivers the whole app from one
+// origin (http://127.0.0.1:<port>) — no CORS, no network, fully offline.
+const STATIC_DIR = (process.env.PEARLSMILE_STATIC_DIR ?? "").trim();
+if (STATIC_DIR) {
+  app.use(express.static(STATIC_DIR));
+  // The static export emits login.html, dashboard.html, ... — map /login to it.
+  app.get(/^(?!\/api).*/, (req, res) => {
+    const rel = req.path === "/" ? "index.html" : `${req.path.replace(/^\//, "")}.html`;
+    const file = path.join(STATIC_DIR, rel);
+    if (fs.existsSync(file)) return res.sendFile(file);
+    return res.sendFile(path.join(STATIC_DIR, "index.html"));
+  });
+  console.log(`[server] serving desktop frontend from ${STATIC_DIR}`);
+}
+
+// Default credentials for a brand-new desktop install (empty clinic — no
+// demo patients). Same as the dev seed defaults; changeable later.
+const DESKTOP_DOCTOR_EMAIL = "doctor@pearlsmile.dental";
+const DESKTOP_DOCTOR_PASSWORD = "demo1234";
+
 async function main(): Promise<void> {
   const db = await initDb();
   const mode = getDbMode();
-  const { doctors, patients } = await db.getCounts();
+  const desktopDataDir = (process.env.PEARLSMILE_DATA_DIR ?? "").trim();
+  let { doctors, patients } = await db.getCounts();
   console.log(`[db] mode=${mode}`);
   console.log(`[db] doctors=${doctors} patients=${patients}`);
+  if (desktopDataDir && doctors === 0) {
+    // First launch of the desktop app: empty clinic, just a doctor account
+    // so login works out of the box.
+    const passwordHash = await bcrypt.hash(DESKTOP_DOCTOR_PASSWORD, 10);
+    await db.upsertDoctor({
+      email: DESKTOP_DOCTOR_EMAIL,
+      name: "Dr. Ananya Sharma",
+      passwordHash,
+    });
+    ({ doctors, patients } = await db.getCounts());
+    console.log(
+      `[db] desktop first launch: created default doctor account (${DESKTOP_DOCTOR_EMAIL}) — empty clinic, no demo patients.`
+    );
+  }
   if (doctors === 0) {
     console.warn(
       "[db] ⚠️  WARNING: No doctor accounts found — login will fail with 401.\n" +

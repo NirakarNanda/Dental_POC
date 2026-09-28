@@ -3,19 +3,62 @@ import fs from "fs";
 import path from "path";
 import type { Appointment, CreatePatientInput, Db, Doctor, Patient, UpdatePatientInput } from "../types";
 
-// Offline fallback store: in-memory with persistence to <backend-root>/data/db.json.
+// Offline fallback store: in-memory with persistence to a db.json file.
 //
-// The path is anchored to the backend package root derived from THIS module's
-// location, never process.cwd(). This file lives at src/db/jsonRepo.ts under
-// `tsx` dev and at dist/db/jsonRepo.js under compiled `node` prod — both are
-// exactly two levels below the backend root, so seed and server always share
-// the same db.json no matter which folder the user ran `npm run ...` from.
+// The path is anchored to THIS module's location, never process.cwd(). This
+// file lives at src/db/jsonRepo.ts under `tsx` dev and at dist/db/jsonRepo.js
+// under compiled `node` prod — both are exactly two levels below the backend
+// root, so seed and server always share the same db.json no matter which
+// folder the user ran `npm run ...` from.
+//
+// Desktop mode: when PEARLSMILE_DATA_DIR is set (the Electron shell sets it
+// to the OS user-data folder), the store lives there instead — the clinic's
+// data survives app updates and lives outside the install directory.
 const BACKEND_ROOT = path.resolve(__dirname, "..", "..");
-const DATA_DIR = path.join(BACKEND_ROOT, "data");
+const DATA_DIR =
+  process.env.PEARLSMILE_DATA_DIR?.trim() || path.join(BACKEND_ROOT, "data");
 const DB_FILE = path.join(DATA_DIR, "db.json");
+const BACKUP_DIR = path.join(DATA_DIR, "backups");
+const IS_DESKTOP = Boolean(process.env.PEARLSMILE_DATA_DIR?.trim());
 
 /** Exact db.json path used by the JSON store — useful for diagnostics. */
 export const JSON_DB_FILE_PATH = DB_FILE;
+
+function todayKey(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/**
+ * Desktop-only safety net: before overwriting db.json, keep one backup per
+ * day (last 7). Cheap insurance for a clinic running fully offline.
+ */
+function maybeBackup(): void {
+  if (!IS_DESKTOP) return;
+  try {
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const stamp = todayKey();
+    const dest = path.join(BACKUP_DIR, `db-${stamp}.json`);
+    if (!fs.existsSync(DB_FILE) || fs.existsSync(dest)) return;
+    fs.copyFileSync(DB_FILE, dest);
+    const files = fs
+      .readdirSync(BACKUP_DIR)
+      .filter((f) => /^db-\d{4}-\d{2}-\d{2}\.json$/.test(f))
+      .sort();
+    for (const old of files.slice(0, Math.max(0, files.length - 7))) {
+      try {
+        fs.unlinkSync(path.join(BACKUP_DIR, old));
+      } catch {
+        /* best effort */
+      }
+    }
+    console.log(`[db:json] daily backup written: ${dest}`);
+  } catch (err) {
+    console.error("[db:json] backup failed:", (err as Error).message);
+  }
+}
 
 interface FileDbShape {
   doctors: Doctor[];
@@ -93,6 +136,17 @@ export class JsonFileDb implements Db {
     this.patients = [];
   }
 
+  private writeNow(): void {
+    try {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+      maybeBackup();
+      const shape: FileDbShape = { doctors: this.doctors, patients: this.patients, appointments: this.appointments };
+      fs.writeFileSync(DB_FILE, JSON.stringify(shape, null, 2), "utf8");
+    } catch (err) {
+      console.error("[db:json] failed to write db.json:", (err as Error).message);
+    }
+  }
+
   private scheduleFlush(): void {
     this.dirty = true;
     if (this.flushTimer) return;
@@ -100,13 +154,7 @@ export class JsonFileDb implements Db {
       this.flushTimer = null;
       if (!this.dirty) return;
       this.dirty = false;
-      try {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-        const shape: FileDbShape = { doctors: this.doctors, patients: this.patients, appointments: this.appointments };
-        fs.writeFileSync(DB_FILE, JSON.stringify(shape, null, 2), "utf8");
-      } catch (err) {
-        console.error("[db:json] failed to write db.json:", (err as Error).message);
-      }
+      this.writeNow();
     }, 100);
     this.flushTimer.unref?.();
   }
@@ -212,13 +260,7 @@ export class JsonFileDb implements Db {
       this.flushTimer = null;
     }
     if (this.dirty) {
-      try {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-        const shape: FileDbShape = { doctors: this.doctors, patients: this.patients, appointments: this.appointments };
-        fs.writeFileSync(DB_FILE, JSON.stringify(shape, null, 2), "utf8");
-      } catch (err) {
-        console.error("[db:json] failed to flush db.json on close:", (err as Error).message);
-      }
+      this.writeNow();
       this.dirty = false;
     }
   }
