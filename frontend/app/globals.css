@@ -202,29 +202,29 @@ body {
 }
 
 /* ---------- Landing flora strip ---------- */
-/* Muted botanical tones for the swaying wildflowers; deepened in dark mode */
+/* Drifting petal/pollen accents; deepened in dark mode */
 :root {
-  --flora-stem: #7d8f6f;
-  --flora-leaf: #93a986;
-  --flora-grass: #a9b795;
   --flora-petal: #f4f0e3;
-  --flora-center: #d9b25f;
 }
 .dark {
-  --flora-stem: #3a5a4e;
-  --flora-leaf: #2e4a42;
-  --flora-grass: #41604f;
   --flora-petal: #cfe3da;
-  --flora-center: #8a6f3a;
 }
-/* GSAP sways each photographic layer around its bottom edge */
+/* GSAP drifts each 120%-wide photographic layer horizontally */
 .flora-layer {
   transform-origin: 50% 100%;
+  will-change: transform;
 }
-/* photo top edges melt into the background instead of cutting off */
-.flora-img {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 42%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 42%);
+/* photo edges melt into the background instead of cutting off —
+   top fade plus soft left/right fades, so no hard edges anywhere */
+.flora-photo {
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, black 45%),
+    linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, black 45%),
+    linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
+  mask-composite: intersect;
 }
 
 /* slow, barely-there drift for the ambient mesh gradient */

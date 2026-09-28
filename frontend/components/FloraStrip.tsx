@@ -3,11 +3,12 @@
 import Image from "next/image";
 
 /**
- * FloraStrip — photorealistic botanical layers along the bottom edge of the
- * landing hero. Two depth rows (soft-focus meadow bokeh behind, sharp daisies
- * and grasses in front). Each layer carries the `flora-layer` class; the
- * page's GSAP timeline sways them independently for parallax wind. True-alpha
- * PNGs; the top edge of each photo melts into the background via a CSS mask.
+ * FloraStrip — dense meadow photographs along the bottom edge of the
+ * landing hero. NO cutouts: two full rectangular photos blended into the
+ * page with CSS masks (top + side fades), so there are no fringes or halos.
+ * Each layer is 120% viewport width and carries the `flora-layer` class;
+ * the page's GSAP timeline drifts them horizontally with irregular gust
+ * timing for natural parallax wind.
  */
 export default function FloraStrip() {
   return (
@@ -15,28 +16,31 @@ export default function FloraStrip() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] overflow-hidden"
     >
-      {/* back layer: soft-focus meadow bokeh */}
-      <div className="flora-layer absolute inset-x-0 bottom-0 h-32 sm:h-40 dark:brightness-[0.72] dark:saturate-90">
+      {/* back layer: sunlit daisy meadow */}
+      <div className="flora-layer absolute bottom-0 left-[-10vw] h-[26vh] w-[120vw] sm:h-[32vh]">
         <Image
-          src="/flora-back.png"
+          src="/meadow-back.jpg"
           alt=""
           fill
-          sizes="100vw"
-          className="flora-img object-cover object-bottom opacity-90 blur-[1.5px]"
+          sizes="120vw"
+          className="flora-photo object-cover object-bottom dark:brightness-[0.62] dark:saturate-[0.85]"
         />
+        {/* cool tint so the photo melts into the dark theme */}
+        <div className="absolute inset-0 hidden dark:block dark:bg-[#0d3b38]/35" />
       </div>
-      {/* front layer: sharp daisies, seed heads and grasses */}
-      <div className="flora-layer absolute inset-x-0 bottom-0 h-44 sm:h-60 dark:brightness-[0.72] dark:saturate-90">
+      {/* front layer: lush close-up meadow */}
+      <div className="flora-layer absolute bottom-0 left-[-10vw] h-[32vh] w-[120vw] sm:h-[38vh]">
         <Image
-          src="/flora-front.png"
+          src="/meadow-front.jpg"
           alt=""
           fill
-          sizes="100vw"
-          className="flora-img object-cover object-bottom"
+          sizes="120vw"
+          className="flora-photo object-cover object-bottom dark:brightness-[0.62] dark:saturate-[0.85]"
         />
+        <div className="absolute inset-0 hidden dark:block dark:bg-[#0d3b38]/35" />
       </div>
       {/* spacer gives the strip its height */}
-      <div className="h-44 sm:h-60" />
+      <div className="h-[32vh] sm:h-[38vh]" />
     </div>
   );
 }

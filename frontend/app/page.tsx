@@ -42,7 +42,7 @@ export default function LandingPage() {
         gsap.set(".hl-inner", { yPercent: 0 });
         gsap.set("[data-fade]", { opacity: 1, y: 0 });
         gsap.set("[data-orb-enter]", { opacity: 1, scale: 1 });
-        gsap.set(".flora-layer", { rotation: 0, x: 0 });
+        gsap.set(".flora-layer", { xPercent: 0, skewX: 0 });
         gsap.set("[data-petal]", { opacity: 0.7 });
         return;
       }
@@ -131,6 +131,38 @@ export default function LandingPage() {
 
       // Subtle mouse parallax on the whole bubble group (±18px)
       const fine = window.matchMedia("(pointer: fine)").matches;
+
+      // ── Botanical wind: horizontal drift with irregular gusts ─
+      // Each 120%-wide photo layer drifts ±2–3% sideways with a soft
+      // skewX "breeze bend". Gusts alternate lulls and pushes with
+      // randomized timing — never a perfect pendulum sine. Back and
+      // front layers drift in opposite phases for parallax depth.
+      const gustDrift = (layer: HTMLElement, dir: 1 | -1) => {
+        const push = () => {
+          gsap.to(layer, {
+            xPercent: dir * rand(1.2, 2.8),
+            skewX: dir * rand(0.2, 0.6),
+            duration: rand(2, 3.2),
+            ease: "power1.inOut",
+            onComplete: () => {
+              gsap.to(layer, {
+                xPercent: dir * rand(-0.6, 0.6),
+                skewX: 0,
+                duration: rand(3, 5),
+                ease: "sine.inOut",
+                onComplete: () => gsap.delayedCall(rand(0.4, 1.8), push),
+              });
+            },
+          });
+        };
+        gsap.delayedCall(rand(0, 1.5), push);
+      };
+      const driftFlora = () => {
+        gsap.utils
+          .toArray<HTMLElement>(".flora-layer")
+          .forEach((layer, i) => gustDrift(layer, i === 0 ? -1 : 1));
+      };
+
       if (fine && parallaxRef.current) {
         const qx = gsap.quickTo(parallaxRef.current, "x", {
           duration: 0.9,
@@ -148,20 +180,7 @@ export default function LandingPage() {
         };
         window.addEventListener("mousemove", onMove);
 
-        // ── Botanical wind: each photo layer sways on its own
-        // rhythm for parallax depth ─────────────────────────────
-        const layers = gsap.utils.toArray<HTMLElement>(".flora-layer");
-        layers.forEach((layer, i) => {
-          gsap.to(layer, {
-            rotation: (i === 0 ? 1 : -1) * rand(1, 1.5),
-            x: (i === 0 ? -1 : 1) * rand(8, 18),
-            duration: rand(4, 7),
-            yoyo: true,
-            repeat: -1,
-            ease: "sine.inOut",
-            delay: rand(0, 2),
-          });
-        });
+        driftFlora();
 
         // ── A few petals drifting on the breeze ────────────────
         gsap.utils.toArray<HTMLElement>("[data-petal]").forEach((petal) => {
@@ -180,18 +199,8 @@ export default function LandingPage() {
         return () => window.removeEventListener("mousemove", onMove);
       }
 
-      // No fine pointer: still sway the flora layers
-      gsap.utils.toArray<HTMLElement>(".flora-layer").forEach((layer, i) => {
-        gsap.to(layer, {
-          rotation: (i === 0 ? 1 : -1) * rand(1, 1.5),
-          x: (i === 0 ? -1 : 1) * rand(8, 18),
-          duration: rand(4, 7),
-          yoyo: true,
-          repeat: -1,
-          ease: "sine.inOut",
-          delay: rand(0, 2),
-        });
-      });
+      // No fine pointer: drift the flora layers with the same gust rhythm
+      driftFlora();
     },
     { scope: rootRef },
   );
@@ -242,11 +251,15 @@ export default function LandingPage() {
           className="group flex flex-col items-center gap-3"
           aria-label="Meet Dr. Ananya Sharma — sign in"
         >
-          <span className="relative block h-[76px] w-[60px] overflow-visible rounded-2xl border border-[#0e2a28]/12 bg-white/70 shadow-soft backdrop-blur transition-transform duration-500 group-hover:-translate-y-1 dark:border-white/15 dark:bg-white/[0.06]">
-            <span
-              className={`${fraunces.className} flex h-full items-center justify-center text-[26px] font-light text-[#0e2a28]/80 dark:text-white/85`}
-            >
-              AS
+          <span className="relative block h-[76px] w-[60px] overflow-visible rounded-2xl border border-[#0e2a28]/12 shadow-soft transition-transform duration-500 group-hover:-translate-y-1 dark:border-white/15">
+            <span className="absolute inset-0 overflow-hidden rounded-2xl">
+              <Image
+                src="/doctor-portrait.jpg"
+                alt="Dr. Ananya Sharma"
+                fill
+                sizes="60px"
+                className="object-cover"
+              />
             </span>
             <span className="absolute -bottom-2.5 -right-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-[#0e2a28] text-[#f7f4ec] shadow-soft transition-transform duration-500 group-hover:scale-110 dark:bg-mint-300 dark:text-abyss-950">
               <svg
