@@ -13,9 +13,6 @@ import PasswordField, { fieldInputCls, fieldLabelCls } from "@/components/Passwo
 const DEMO_EMAIL = "doctor@pearlsmile.dental";
 const DEMO_PASSWORD = "demo1234";
 
-const SKETCHFAB_EMBED =
-  "https://sketchfab.com/models/af77b63454c248df8709741aac7cf393/embed?autostart=1&ui_theme=dark";
-
 export default function LoginPage() {
   const { login } = useAuth();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -23,7 +20,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [modelLoaded, setModelLoaded] = useState(false);
 
   useGSAP(
     () => {
@@ -46,7 +42,16 @@ export default function LoginPage() {
           delay: 0.15,
         },
       );
-      // Slow ambient drift for the glow orbs.
+      // Gentle float for the hero illustration.
+      gsap.utils.toArray<HTMLElement>("[data-float]").forEach((el, i) => {
+        gsap.to(el, {
+          y: -10,
+          duration: 3.4 + i * 0.7,
+          yoyo: true,
+          repeat: -1,
+          ease: "sine.inOut",
+        });
+      });
       gsap.utils.toArray<HTMLElement>("[data-drift]").forEach((el, i) => {
         gsap.to(el, {
           x: i % 2 === 0 ? 46 : -38,
@@ -132,27 +137,17 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md">
-        {/* 3D hero topper */}
+        {/* Clay-style dentist + patient hero topper */}
         <div className="relative z-10 -mb-6 flex justify-center" data-reveal>
-          <div className="w-full max-w-[330px]">
+          <div className="w-full max-w-[330px]" data-float>
             <div className="relative">
               <div className="absolute -inset-5 rounded-[2rem] bg-mint-300/30 blur-2xl dark:bg-mint-400/15" />
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-abyss-900 shadow-[0_24px_60px_-20px_rgba(13,60,60,0.5)] ring-1 ring-ink/10 dark:shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)] dark:ring-white/15">
-                {!modelLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <p className="animate-pulse text-sm tracking-wide text-white/40">
-                      Loading 3D…
-                    </p>
-                  </div>
-                )}
-                <iframe
-                  title="Rose Tinted — flowers in test tubes, 3D model by SiobhanClair"
-                  src={SKETCHFAB_EMBED}
-                  allow="autoplay; fullscreen; xr-spatial-tracking"
-                  allowFullScreen
-                  onLoad={() => setModelLoaded(true)}
-                  className="relative h-full w-full border-0"
-                  loading="lazy"
+              <div className="relative overflow-hidden rounded-[1.75rem] shadow-[0_24px_60px_-20px_rgba(13,60,60,0.5)] ring-1 ring-ink/10 dark:shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)] dark:ring-white/15">
+                <img
+                  src="/dentist-patient-clay.png"
+                  alt="Friendly cartoon dentist examining a smiling patient in a cozy dental clinic"
+                  className="h-auto w-full"
+                  draggable={false}
                 />
               </div>
             </div>
@@ -243,29 +238,6 @@ export default function LoginPage() {
 
         <p
           className="mt-4 text-center text-[11px] tracking-wide text-ink/40 dark:text-white/35"
-          data-reveal
-        >
-          “Rose Tinted” by{" "}
-          <a
-            href="https://sketchfab.com/SiobhanClair"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className="underline underline-offset-2 hover:text-ink dark:hover:text-white"
-          >
-            SiobhanClair
-          </a>{" "}
-          on{" "}
-          <a
-            href="https://sketchfab.com/3d-models/rose-tinted-af77b63454c248df8709741aac7cf393"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className="underline underline-offset-2 hover:text-ink dark:hover:text-white"
-          >
-            Sketchfab
-          </a>
-        </p>
-        <p
-          className="mt-2 text-center text-[11px] tracking-wide text-ink/40 dark:text-white/35"
           data-reveal
         >
           © 2026 PearlSmile Dental Studio · Crafted by Nirakar Nanda
