@@ -224,54 +224,27 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ── hero: headline wrapped around the orb ────────────────── */}
-      <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-6 pt-10 lg:px-10">
-        <div className="relative w-full">
-          {/* orb: stacked above the headline on mobile, floating over it on desktop */}
-          <div className="relative z-10 mx-auto mb-8 flex w-fit items-center justify-center lg:pointer-events-none lg:absolute lg:inset-0 lg:m-0 lg:w-auto">
-            <div ref={parallaxRef} data-orb-enter className="opacity-0">
-              <div ref={floatRef} className="relative">
-                <div
-                  ref={glowRef}
-                  aria-hidden="true"
-                  className="absolute inset-[-14%] rounded-full bg-[#cde9df]/70 blur-3xl dark:bg-mint-400/15"
-                />
-                <Image
-                  src="/hero-orb.webp"
-                  alt="A pristine molar preserved inside a luminous glass orb"
-                  width={1600}
-                  height={1600}
-                  priority
-                  className="relative h-[clamp(200px,54vw,260px)] w-[clamp(200px,54vw,260px)] rounded-full object-cover lg:h-[clamp(220px,27vw,400px)] lg:w-[clamp(220px,27vw,400px)]"
-                  style={{
-                    maskImage:
-                      "radial-gradient(circle, black 62%, transparent 72%)",
-                    WebkitMaskImage:
-                      "radial-gradient(circle, black 62%, transparent 72%)",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+      {/* ── hero: headline fully legible, orb in its own row below ── */}
+      <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-6 pt-8 lg:px-10">
+        <h1
+          className={`${fraunces.className} relative z-10 text-center text-[clamp(2.6rem,6vw,5rem)] font-light leading-[1.06] tracking-[-0.015em]`}
+        >
+          <span className="block overflow-hidden pb-1">
+            <span className="hl-inner block">Gentle Dentistry,</span>
+          </span>
+          <span className="block overflow-hidden pb-1">
+            <span className="hl-inner block">Crafted Around</span>
+          </span>
+          <span className="block overflow-hidden pb-3">
+            <span className="hl-inner block italic">Your Smile.</span>
+          </span>
+        </h1>
 
-          <h1
-            className={`${fraunces.className} relative z-0 text-center text-[clamp(2.8rem,8.2vw,7.25rem)] font-light leading-[1.05] tracking-[-0.015em]`}
-          >
-            <span className="block overflow-hidden pb-1">
-              <span className="hl-inner block">Gentle Dentistry,</span>
-            </span>
-            <span className="block overflow-hidden pb-1">
-              <span className="hl-inner block">Crafted Around</span>
-            </span>
-            <span className="block overflow-hidden pb-3">
-              <span className="hl-inner block italic">Your Smile.</span>
-            </span>
-          </h1>
-
-          {/* quiet side notes */}
+        {/* orb row — the orb can never touch the headline; side notes flank it */}
+        <div className="relative mt-8 flex w-full items-center justify-center lg:mt-10">
           <div
             data-fade
-            className="absolute left-0 top-1/2 hidden w-60 -translate-y-1/2 xl:block"
+            className="absolute left-0 hidden w-56 xl:block"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#0e2a28]/45 dark:text-white/40">
               The Studio
@@ -281,9 +254,34 @@ export default function LandingPage() {
               your calendar.
             </p>
           </div>
+
+          <div ref={parallaxRef} data-orb-enter className="opacity-0">
+            <div ref={floatRef} className="relative">
+              <div
+                ref={glowRef}
+                aria-hidden="true"
+                className="absolute inset-[-14%] rounded-full bg-[#cde9df]/70 blur-3xl dark:bg-mint-400/15"
+              />
+              <Image
+                src="/hero-orb.webp"
+                alt="A pristine molar preserved inside a luminous glass orb"
+                width={1600}
+                height={1600}
+                priority
+                className="relative h-[clamp(170px,44vw,210px)] w-[clamp(170px,44vw,210px)] rounded-full object-cover lg:h-[clamp(180px,18vw,250px)] lg:w-[clamp(180px,18vw,250px)]"
+                style={{
+                  maskImage:
+                    "radial-gradient(circle, black 62%, transparent 72%)",
+                  WebkitMaskImage:
+                    "radial-gradient(circle, black 62%, transparent 72%)",
+                }}
+              />
+            </div>
+          </div>
+
           <div
             data-fade
-            className="absolute right-0 top-1/2 hidden w-60 -translate-y-1/2 text-right xl:block"
+            className="absolute right-0 hidden w-56 text-right xl:block"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#0e2a28]/45 dark:text-white/40">
               The Standard
@@ -296,7 +294,7 @@ export default function LandingPage() {
         </div>
 
         {/* ── CTA ── */}
-        <div data-fade className="mt-12 flex flex-col items-center gap-4 sm:mt-16">
+        <div data-fade className="mt-8 flex flex-col items-center gap-4 lg:mt-10">
           <Link
             href="/login"
             className="group inline-flex items-center gap-3 rounded-full border border-[#0e2a28]/15 bg-white/85 py-4 pl-9 pr-7 text-[15px] font-semibold tracking-wide text-[#0e2a28] shadow-soft backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-[#0e2a28]/30 hover:shadow-lift dark:border-white/15 dark:bg-white/[0.07] dark:text-white dark:hover:border-white/30"

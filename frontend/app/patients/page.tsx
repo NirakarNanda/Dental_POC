@@ -277,7 +277,7 @@ function PatientsContent() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search name, phone or treatment…"
-                className="w-full rounded-xl border border-white/60 bg-white/50 py-3 pl-11 pr-4 text-sm backdrop-blur-md outline-none transition-all placeholder:text-ink/35 focus:border-ink/35 focus:bg-white/80 focus:ring-4 focus:ring-ink/5 dark:border-white/10 dark:bg-white/[0.06] dark:placeholder:text-white/30 dark:focus:border-white/35 dark:focus:bg-white/[0.09] dark:focus:ring-white/5"
+                className="w-full rounded-xl border border-white/60 bg-white/40 py-3 pl-11 pr-4 text-sm backdrop-blur-xl outline-none transition-all placeholder:text-ink/35 focus:border-ink/35 focus:bg-white/70 focus:ring-4 focus:ring-ink/5 dark:border-white/10 dark:bg-white/[0.05] dark:placeholder:text-white/30 dark:focus:border-white/35 dark:focus:bg-white/[0.08] dark:focus:ring-white/5"
               />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -394,7 +394,7 @@ function PatientsContent() {
         <div className="mt-6 space-y-4 md:hidden">
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-3xl border border-ink/10 bg-white p-5 dark:border-white/10 dark:bg-white/[0.03]">
+              <div key={i} className="glass rounded-3xl p-5">
                 <div className="skeleton h-5 w-40 rounded" />
                 <div className="skeleton mt-3 h-4 w-56 rounded" />
                 <div className="skeleton mt-2 h-4 w-32 rounded" />

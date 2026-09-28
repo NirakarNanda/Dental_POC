@@ -38,6 +38,7 @@ const NAV = [
 function ShellInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, loading, logout } = useRequireAuth();
+  const sectionTitle = pathname === "/patients" ? "Patients" : "Dashboard";
 
   if (loading || !user) {
     return (
@@ -59,7 +60,7 @@ function ShellInner({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-ivory text-ink dark:bg-abyss-950 dark:text-[#edf7f5] lg:flex">
       <AmbientBackground />
       {/* Sidebar */}
-      <aside className="relative z-10 hidden w-64 shrink-0 flex-col border-r border-white/60 bg-white/40 backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.05] lg:flex">
+      <aside className="relative z-10 hidden w-64 shrink-0 flex-col border-r border-white/60 bg-white/30 backdrop-blur-[28px] saturate-[1.6] dark:border-white/10 dark:bg-white/[0.04] lg:flex">
         <Link href="/dashboard" className="flex items-center gap-3 px-7 pt-7" aria-label="PearlSmile dashboard">
           <Logo size={36} />
           <span className="leading-none">
@@ -132,6 +133,8 @@ function ShellInner({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
+      {/* Content column */}
+      <div className="min-w-0 flex-1 lg:flex lg:flex-col">
       {/* Mobile top bar */}
       <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-white/60 bg-ivory/60 px-4 py-2.5 backdrop-blur-2xl dark:border-white/10 dark:bg-abyss-950/70 lg:hidden">
         <Link href="/dashboard" className="flex shrink-0 items-center" aria-label="PearlSmile dashboard">
@@ -167,10 +170,24 @@ function ShellInner({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
+      {/* Desktop navbar — section title + theme toggle, always visible */}
+      <div className="glass-bar sticky top-0 z-30 hidden items-center justify-between gap-4 px-8 py-3 lg:flex">
+        <div>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-ink/45 dark:text-white/40">
+            PearlSmile Studio
+          </p>
+          <h2 className={`${fraunces.className} mt-0.5 text-[21px] font-light leading-none tracking-tight`}>
+            {sectionTitle}
+          </h2>
+        </div>
+        <ThemeToggle />
+      </div>
+
       {/* Main */}
       <main className="relative z-10 min-w-0 flex-1 px-5 py-8 sm:px-8 lg:py-10">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
+      </div>
     </div>
   );
 }

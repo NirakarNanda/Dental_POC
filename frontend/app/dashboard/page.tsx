@@ -356,7 +356,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div data-reveal className="rounded-3xl border border-ink/20 bg-ink/75 p-6 text-ivory shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_12px_40px_-12px_rgba(4,47,46,0.45)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.06] dark:text-[#edf7f5] sm:p-7">
+            <div data-reveal className="rounded-3xl border border-white/50 bg-ink/70 p-6 text-ivory shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.08),0_24px_55px_-18px_rgba(4,47,46,0.5)] backdrop-blur-[30px] saturate-[1.6] dark:border-white/15 dark:bg-white/[0.06] dark:text-[#edf7f5] sm:p-7">
               <h2 className={`${fraunces.className} text-[1.45rem] font-light tracking-tight`}>
                 Quick actions
               </h2>
